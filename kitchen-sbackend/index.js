@@ -90,12 +90,12 @@ app.get("/", (req, res) => {
 // Simple test endpoint (no database required)
 app.get("/test", (req, res) => {
   const serverInfo = req.socket?.server?.address();
-  res.json({ 
+  res.json({
     message: "Server is responding",
     timestamp: new Date().toISOString(),
     env: {
       nodeEnv: process.env.NODE_ENV,
-      port: process.env.PORT || 3000,
+      port: process.env.PORT || 3005,
       host: process.env.HOST || "0.0.0.0",
       hasDatabaseUrl: !!process.env.DATABASE_URL
     },
@@ -118,15 +118,15 @@ app.get("/health", async (req, res) => {
     const prisma = (await import("./prisma.js")).default;
     // Test database connection
     await prisma.$queryRaw`SELECT 1`;
-    res.json({ 
-      status: "healthy", 
+    res.json({
+      status: "healthy",
       database: "connected",
       timestamp: new Date().toISOString()
     });
   } catch (error) {
     console.error("Health check failed:", error);
-    res.status(503).json({ 
-      status: "unhealthy", 
+    res.status(503).json({
+      status: "unhealthy",
       database: "disconnected",
       error: error.message,
       timestamp: new Date().toISOString()
@@ -155,7 +155,7 @@ app.use((err, req, res, next) => {
     method: req.method,
     timestamp: new Date().toISOString()
   });
-  
+
   // Ensure CORS headers are set even on errors
   const origin = req.headers.origin;
   const allowedOrigins = [
@@ -164,12 +164,12 @@ app.use((err, req, res, next) => {
     "https://www.MakeWin.net",
     "https://midnightblue-fish-476058.hostingersite.com"
   ];
-  
+
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
   }
-  
+
   res.status(err.status || 500).json({
     error: err.message || "Internal server error",
     ...(process.env.NODE_ENV === "development" && { stack: err.stack })
@@ -181,7 +181,7 @@ app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
 const HOST = process.env.HOST || "0.0.0.0"; // Listen on all interfaces for production
 
 // Handle unhandled promise rejections

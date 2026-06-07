@@ -1,5 +1,5 @@
 //export const API = import.meta.env.VITE_API_URL;
-export const API = "http://localhost:3000";
+export const API = "http://localhost:3005";
 
 const axiosInstance = axios.create({
   baseURL: API,
