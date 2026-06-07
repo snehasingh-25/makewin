@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { MapPin, Phone } from "lucide-react";
+import { FiMapPin, FiPhone } from "react-icons/fi";
 import { API } from "../api";
 import fallbackImage1 from "../assets/hero-kitchen.jpeg";
 import fallbackImage2 from "../assets/product-kitchen.jpeg";
@@ -178,7 +178,7 @@ export default function DealerLocator() {
               
               <div className="mt-4 space-y-2.5">
                 <p className="text-sm text-foreground/75 flex items-start gap-2 leading-relaxed">
-                  <MapPin size={14} className="mt-0.5 text-olive shrink-0" />
+                  <FiMapPin size={14} className="mt-0.5 text-olive shrink-0" />
                   <span>{d.address}, {d.location}</span>
                 </p>
                 
@@ -186,7 +186,7 @@ export default function DealerLocator() {
                   href={`tel:${d.phone.replace(/\s/g, "")}`}
                   className="inline-flex items-center gap-2 text-sm text-olive hover:text-olive-dark transition font-medium"
                 >
-                  <Phone size={14} className="shrink-0" />
+                  <FiPhone size={14} className="shrink-0" />
                   <span>{d.phone}</span>
                 </a>
               </div>
