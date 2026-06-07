@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Category {
+  id          Int              @id @default(autoincrement())
+  name        String
+  slug        String           @unique
+  description String?          @db.Text
+  imageUrl    String?          @db.Text
+  order       Int              @default(0)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  products    ProductCategory[]
+
+  @@index([order])
+}
+
+model Product {
+  id            Int            @id @default(autoincrement())
+  name          String
+  description   String         @db.Text
+  aiDescription String?        @db.Text
+  images        String         @db.Text // JSON array of image URLs
+  videos        String?        @db.Text // JSON array of video URLs (optional)
+  keywords      String         @db.Text // JSON array for multilingual search
+  order         Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  categories    ProductCategory[]
+
+  @@index([createdAt])
+  @@index([order])
+}
+
+model ContactMessage {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String?
+  message   String    @db.Text
+  read      Boolean   @default(false)
+  createdAt DateTime  @default(now())
+}
+
+model Reel {
+  id          Int       @id @default(autoincrement())
+  title       String?
+  url         String?   @db.Text
+  thumbnail   String?   @db.Text
+  platform    String    @default("native")
+  videoUrl    String?   @db.Text
+  isTrending  Boolean   @default(false)
+  isFeatured  Boolean   @default(false)
+  viewCount   Int       @default(0)
+  discountPct Int?
+  isActive    Boolean   @default(true)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive, order])
+  @@index([isTrending, order])
+  @@index([isFeatured])
+}
+
+model ProductCategory {
+  id         Int      @id @default(autoincrement())
+  productId  Int
+  categoryId Int
+
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, categoryId])
+}
+
+model Banner {
+  id          Int       @id @default(autoincrement())
+  title       String
+  subtitle    String?   @db.Text
+  imageUrl    String    @db.Text
+  ctaText     String?
+  ctaLink     String?   @db.Text
+  bannerType  String    @default("primary")
+  isActive    Boolean   @default(true)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([bannerType, order])
+}
+
+model Dealer {
+  id        Int      @id @default(autoincrement())
+  city      String
+  firm      String
+  address   String   @db.Text
+  location  String
+  phone     String
+  image1    String?  @db.Text
+  image2    String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([city])
+}
