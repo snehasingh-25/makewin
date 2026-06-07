@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { API } from "../api";
+import axios from "../api";
 
 function getLowestAndHighestPrice(product) {
   const sizes = product?.sizes || [];
@@ -272,7 +272,7 @@ export default function ReelCarousel({ reels }) {
     if (viewedIds.has(id)) return;
     setViewedIds((prev) => new Set(prev).add(id));
     try {
-      await fetch(`${API}/reels/${id}/view`, { method: "POST" });
+      await axios.post(`/reels/${id}/view`);
     } catch {
       // ignore
     }

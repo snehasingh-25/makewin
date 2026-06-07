@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { API } from "../api";
+import axios from "../api";
 import { useToast } from "../context/ToastContext";
 
 export default function Footer() {
@@ -18,26 +18,18 @@ export default function Footer() {
 
     setSubscribing(true);
     try {
-      const res = await fetch(`${API}/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "Newsletter Subscriber",
-          email: email,
-          phone: null,
-          message: `Newsletter subscription request from ${email}`,
-        }),
+      await axios.post("/contact", {
+        name: "Newsletter Subscriber",
+        email: email,
+        phone: null,
+        message: `Newsletter subscription request from ${email}`,
       });
 
-      if (res.ok) {
-        toast.success("Thank you for subscribing! We'll keep you updated.");
-        setEmail("");
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "Failed to subscribe. Please try again.");
-      }
-    } catch {
-      toast.error("Error subscribing. Please try again.");
+      toast.success("Thank you for subscribing! We'll keep you updated.");
+      setEmail("");
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || "Failed to subscribe. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setSubscribing(false);
     }

@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import { API } from "../api";
+import axios from "../api";
 import InfiniteScrollCarousel from "../components/InfiniteScrollCarousel";
 import { INFINITE_SCROLL_CAROUSEL_UI } from "../components/infiniteScrollCarouselPresets";
 import ProductListing from "../components/ProductListing";
@@ -17,9 +17,9 @@ export default function CategoriesPage() {
   }), [slug]);
 
   useEffect(() => {
-    fetch(`${API}/categories`)
-      .then(res => res.json())
-      .then(categoriesData => {
+    axios.get("/categories")
+      .then(res => {
+        const categoriesData = res.data;
         setCategories(categoriesData);
         if (slug) {
           const category = categoriesData.find(cat => cat.slug === slug);

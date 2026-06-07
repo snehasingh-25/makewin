@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { API } from "../../api";
+import axios from "../../api";
 import { useToast } from "../../context/ToastContext";
 
 export default function CategoryForm({ category, onSave, onCancel }) {
@@ -88,9 +88,7 @@ export default function CategoryForm({ category, onSave, onCancel }) {
     isSubmittingRef.current = true;
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const url = category ? `${API}/categories/${category.id}` : `${API}/categories`;
-      const method = category ? "PUT" : "POST";
+      const url = category ? `/categories/${category.id}` : "/categories";
 
       const formDataToSend = new FormData();
       formDataToSend.append("name", formData.name);
@@ -106,32 +104,25 @@ export default function CategoryForm({ category, onSave, onCancel }) {
         formDataToSend.append("existingImageUrl", existingImageUrl);
       }
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formDataToSend,
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        toast.success(category ? "Category updated" : "Category created");
-        onSave();
-        setFormData({ name: "", slug: "", description: "", order: 0 });
-        setImage(null);
-        setImagePreview(null);
-        setExistingImageUrl(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-        initialSnapshotRef.current = "";
+      if (category) {
+        await axios.put(url, formDataToSend);
       } else {
-        toast.error(data.error || data.message || "Failed to save category");
+        await axios.post(url, formDataToSend);
       }
+
+      toast.success(category ? "Category updated" : "Category created");
+      onSave();
+      setFormData({ name: "", slug: "", description: "", order: 0 });
+      setImage(null);
+      setImagePreview(null);
+      setExistingImageUrl(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      initialSnapshotRef.current = "";
     } catch (error) {
-      toast.error(error.message || "Failed to save category");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to save category";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
       isSubmittingRef.current = false;

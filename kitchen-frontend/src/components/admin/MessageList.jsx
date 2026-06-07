@@ -1,4 +1,4 @@
-import { API } from "../../api";
+import axios from "../../api";
 import AdminTable from "./AdminTable";
 import { useToast } from "../../context/ToastContext";
 
@@ -6,23 +6,12 @@ export default function MessageList({ messages, onUpdate }) {
   const toast = useToast();
   const markAsRead = async (messageId) => {
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API}/contact/${messageId}/read`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        toast.success("Marked as read");
-        onUpdate();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || data.message || "Failed to update message");
-      }
+      await axios.patch(`/contact/${messageId}/read`);
+      toast.success("Marked as read");
+      onUpdate();
     } catch (error) {
-      toast.error(error.message || "Failed to update message");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to update message";
+      toast.error(errorMsg);
     }
   };
 
@@ -30,23 +19,12 @@ export default function MessageList({ messages, onUpdate }) {
     if (!confirm("Delete this message?")) return;
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API}/contact/${messageId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        toast.success("Message deleted");
-        onUpdate();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || data.message || "Failed to delete message");
-      }
+      await axios.delete(`/contact/${messageId}`);
+      toast.success("Message deleted");
+      onUpdate();
     } catch (error) {
-      toast.error(error.message || "Failed to delete message");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to delete message";
+      toast.error(errorMsg);
     }
   };
 

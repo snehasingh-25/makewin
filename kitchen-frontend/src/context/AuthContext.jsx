@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { API } from "../api";
+import axios from "../api";
 
 const AuthContext = createContext();
 
@@ -18,18 +18,8 @@ export function AuthProvider({ children }) {
 
   const verifyToken = async () => {
     try {
-      const res = await fetch(`${API}/auth/verify`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-      } else {
-        logout();
-      }
+      const res = await axios.get("/auth/verify");
+      setUser(res.data.user);
     } catch (error) {
       console.error("Token verification error:", error);
       logout();
@@ -40,24 +30,16 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     try {
-      const res = await fetch(`${API}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const res = await axios.post("/auth/login", { email, password });
+      const data = res.data;
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setToken(data.token);
-        setUser(data.user);
-        localStorage.setItem("adminToken", data.token);
-        return { success: true };
-      } else {
-        return { success: false, message: data.message || "Login failed" };
-      }
+      setToken(data.token);
+      setUser(data.user);
+      localStorage.setItem("adminToken", data.token);
+      return { success: true };
     } catch (error) {
-      return { success: false, message: "Network error. Please try again." };
+      const errorMsg = error.response?.data?.message || "Login failed";
+      return { success: false, message: errorMsg };
     }
   };
 

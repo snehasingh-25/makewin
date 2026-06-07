@@ -1,4 +1,4 @@
-import { API } from "../../api";
+import axios from "../../api";
 import { useToast } from "../../context/ToastContext";
 import OrderableList from "./OrderableList";
 
@@ -11,24 +11,13 @@ export default function ReelList({ reels, onEdit, onDelete }) {
     }
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API}/reels/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        toast.success("Reel deleted");
-        onDelete();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || "Failed to delete reel");
-      }
+      await axios.delete(`/reels/${id}`);
+      toast.success("Reel deleted");
+      onDelete();
     } catch (error) {
       console.error("Error deleting reel:", error);
-      toast.error("Error deleting reel. Please try again.");
+      const errorMsg = error.response?.data?.error || "Failed to delete reel. Please try again.";
+      toast.error(errorMsg);
     }
   };
 

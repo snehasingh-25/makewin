@@ -1,4 +1,4 @@
-import { API } from "../../api";
+import axios from "../../api";
 import { useToast } from "../../context/ToastContext";
 import OrderableList from "./OrderableList";
 
@@ -9,23 +9,12 @@ export default function BannerList({ banners, onEdit, onDelete }) {
     if (!confirm("Are you sure you want to delete this banner?")) return;
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API}/banners/${bannerId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        toast.success("Banner deleted");
-        onDelete();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || data.message || "Failed to delete banner");
-      }
+      await axios.delete(`/banners/${bannerId}`);
+      toast.success("Banner deleted");
+      onDelete();
     } catch (error) {
-      toast.error(error.message || "Failed to delete banner");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to delete banner";
+      toast.error(errorMsg);
     }
   };
 

@@ -1,4 +1,4 @@
-import { API } from "../../api";
+import axios from "../../api";
 import { useToast } from "../../context/ToastContext";
 import { cloneProductForDuplicate } from "./productUtils";
 import SearchResultProductRow from "./SearchResultProductRow";
@@ -42,21 +42,12 @@ export default function AdminSearchResults({
     }
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API}/products/${product.id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        toast.success("Product deleted");
-        onRefresh?.();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || data.message || "Failed to delete product");
-      }
+      await axios.delete(`/products/${product.id}`);
+      toast.success("Product deleted");
+      onRefresh?.();
     } catch (error) {
-      toast.error(error.message || "Failed to delete product");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to delete product";
+      toast.error(errorMsg);
     }
   };
 
@@ -75,21 +66,12 @@ export default function AdminSearchResults({
     if (!confirm(`Are you sure you want to delete this ${label}?`)) return;
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API}/${endpoint}/${item.id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (res.ok) {
-        toast.success(`${label.charAt(0).toUpperCase() + label.slice(1)} deleted`);
-        onRefresh?.();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || data.message || `Failed to delete ${label}`);
-      }
+      await axios.delete(`/${endpoint}/${item.id}`);
+      toast.success(`${label.charAt(0).toUpperCase() + label.slice(1)} deleted`);
+      onRefresh?.();
     } catch (error) {
-      toast.error(error.message || `Failed to delete ${label}`);
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || `Failed to delete ${label}`;
+      toast.error(errorMsg);
     }
   };
 

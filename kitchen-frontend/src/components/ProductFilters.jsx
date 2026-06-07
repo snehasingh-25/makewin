@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { API } from "../api";
+import axios from "../api";
 
 function FilterSection({ title, children, defaultOpen = true }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -77,13 +77,12 @@ export default function ProductFilters({
   }, [filters]);
 
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (filters.category) params.append("category", filters.category);
+    const params = {};
+    if (filters.category) params.category = filters.category;
 
-    fetch(`${API}/products/filters?${params.toString()}`)
-      .then(res => res.json())
-      .then(data => {
-        setFilterOptions(data);
+    axios.get("/products/filters", { params })
+      .then(res => {
+        setFilterOptions(res.data);
         setLoading(false);
       })
       .catch(() => setLoading(false));

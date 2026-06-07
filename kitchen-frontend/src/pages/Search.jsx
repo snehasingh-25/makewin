@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { API } from "../api";
+import axios from "../api";
 import ProductCard from "../components/ProductCard";
 import SearchBar from "../components/SearchBar";
 import { shuffleArray } from "../utils/shuffle";
@@ -19,8 +19,8 @@ export default function Search() {
   // Fetch categories and all products for suggestions
   useEffect(() => {
     Promise.all([
-      fetch(`${API}/categories`).then(res => res.json()),
-      fetch(`${API}/products`).then(res => res.json())
+      axios.get("/categories").then(res => res.data),
+      axios.get("/products").then(res => res.data)
     ])
       .then(([categoriesData, productsData]) => {
         setCategories(categoriesData);
@@ -34,30 +34,22 @@ export default function Search() {
   useEffect(() => {
     const performSearch = async () => {
       setLoading(true);
-      const params = new URLSearchParams();
-      if (query) params.append("search", query);
-      if (categoryFilter) params.append("category", categoryFilter);
-
-      const url = `${API}/products?${params.toString()}`;
+      const params = {};
+      if (query) params.search = query;
+      if (categoryFilter) params.category = categoryFilter;
 
       try {
-        const res = await fetch(url);
-        const data = await res.json();
-        const safeData = shuffleArray(Array.isArray(data) ? data : []);
+        const res = await axios.get("/products", { params });
+        const safeData = shuffleArray(Array.isArray(res.data) ? res.data : []);
         setProducts(safeData);
 
         // If no results and we have a query, fall back to all products in selected category.
         if (safeData.length === 0 && query) {
-          // Prefer fetching from API so it's always accurate.
-          const fallbackParams = new URLSearchParams();
-          if (categoryFilter) fallbackParams.append("category", categoryFilter);
-          const fallbackUrl = `${API}/products?${fallbackParams.toString()}`;
-
           let fallbackProducts = [];
           if (categoryFilter) {
-            const fallbackRes = await fetch(fallbackUrl);
-            const fallbackJson = await fallbackRes.json();
-            fallbackProducts = shuffleArray(Array.isArray(fallbackJson) ? fallbackJson : []);
+            const fallbackParams = { category: categoryFilter };
+            const fallbackRes = await axios.get("/products", { params: fallbackParams });
+            fallbackProducts = shuffleArray(Array.isArray(fallbackRes.data) ? fallbackRes.data : []);
           } else {
             fallbackProducts = shuffleArray(Array.isArray(allProducts) ? allProducts : []);
           }

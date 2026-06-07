@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { API } from "../api";
+import axios from "../api";
 import ProductCard from "./ProductCard";
 
 const WHATSAPP_LINK = "https://wa.me/917976948872?text=" + encodeURIComponent("Hello! I need assistance with MakeWin.");
@@ -52,22 +52,8 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API}/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: conversationRef.current }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        const errText = (data.error || "").toLowerCase();
-        if (res.status === 429 || errText.includes("quota") || errText.includes("billing")) {
-          setIsOpen(false);
-          navigate("/categories?trending=true");
-          return;
-        }
-        throw new Error(data.error || "Something went wrong");
-      }
+      const res = await axios.post("/chat", { messages: conversationRef.current });
+      const data = res.data;
 
       const botMsg = {
         id: Date.now() + 1,
@@ -82,7 +68,13 @@ export default function ChatBot() {
         { role: "assistant", content: data.message },
       ];
     } catch (err) {
-      const errMsg = err.message || "I'm syncing the latest gifts right now 😊 Meanwhile, you can chat with me directly on WhatsApp for quick help 🎁";
+      const errText = (err.response?.data?.error || "").toLowerCase();
+      if (err.response?.status === 429 || errText.includes("quota") || errText.includes("billing")) {
+        setIsOpen(false);
+        navigate("/categories?trending=true");
+        return;
+      }
+      const errMsg = err.response?.data?.error || err.message || "I'm syncing the latest gifts right now 😊 Meanwhile, you can chat with me directly on WhatsApp for quick help 🎁";
       setMessages((prev) => [
         ...prev,
         {

@@ -16,7 +16,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { API } from "../../api";
+import axios from "../../api";
 import { useToast } from "../../context/ToastContext";
 
 // Sortable row component
@@ -186,29 +186,16 @@ export default function OrderableList({
         order: index + 1,
       }));
 
-      const res = await fetch(`${API}${reorderEndpoint}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ items: orderData }),
-      });
+      const res = await axios.post(reorderEndpoint, { items: orderData });
 
-      if (res.ok) {
-        toast.success("Order updated successfully");
-        if (onReorder) {
-          onReorder(itemsToSave);
-        }
-      } else {
-        const data = await res.json();
-        toast.error(data.error || data.message || "Failed to update order");
-        // Revert to original items
-        setLocalItems(items);
+      toast.success("Order updated successfully");
+      if (onReorder) {
+        onReorder(itemsToSave);
       }
     } catch (error) {
       console.error("Error saving order:", error);
-      toast.error("Failed to update order. Please try again.");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to update order. Please try again.";
+      toast.error(errorMsg);
       // Revert to original items
       setLocalItems(items);
     } finally {

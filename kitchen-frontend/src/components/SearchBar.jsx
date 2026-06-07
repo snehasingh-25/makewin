@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Typed from "typed.js";
 import Fuse from "fuse.js";
-import { API } from "../api";
+import axios from "../api";
 
 /**
  * Reusable search bar with Fuse.js suggestions and Typed.js animated placeholder.
@@ -39,9 +39,8 @@ export default function SearchBar({
 
   // Fetch all products once for fuzzy suggestions
   useEffect(() => {
-    fetch(`${API}/products`)
-      .then((r) => r.json())
-      .then((data) => setAllProducts(Array.isArray(data) ? data : []))
+    axios.get("/products")
+      .then((res) => setAllProducts(Array.isArray(res.data) ? res.data : []))
       .catch(() => { });
   }, []);
 

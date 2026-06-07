@@ -1,4 +1,4 @@
-import { API } from "../../api";
+import axios, { API } from "../../api";
 import { useToast } from "../../context/ToastContext";
 import AdminTable from "./AdminTable";
 
@@ -9,23 +9,12 @@ export default function DealerList({ dealers, onEdit, onDelete }) {
     if (!confirm("Are you sure you want to delete this dealer showroom?")) return;
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API}/dealers/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        toast.success("Dealer showroom deleted");
-        onDelete();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || data.message || "Failed to delete dealer");
-      }
+      await axios.delete(`/dealers/${id}`);
+      toast.success("Dealer showroom deleted");
+      onDelete();
     } catch (error) {
-      toast.error(error.message || "Failed to delete dealer");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to delete dealer";
+      toast.error(errorMsg);
     }
   };
 

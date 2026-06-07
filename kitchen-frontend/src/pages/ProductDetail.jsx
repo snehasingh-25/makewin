@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { API } from "../api";
+import axios, { API } from "../api";
 import HorizontalProductCarousel from "../components/HorizontalProductCarousel";
 import { MemoReelCarousel as ReelCarousel } from "../components/ReelCarousel";
 
@@ -64,34 +64,21 @@ export default function ProductDetail() {
       return () => ac.abort();
     }
 
-    fetch(`${API}/products/${encodeURIComponent(String(id))}`, { signal: ac.signal })
-      .then(async (res) => {
-        if (res.status === 404) {
-          setProduct(null);
-          setLoadError("not_found");
-          setLoading(false);
-          return null;
-        }
-        if (!res.ok) {
-          const text = await res.text().catch(() => "");
-          throw new Error(`HTTP_${res.status}:${text}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
+    axios.get(`/products/${encodeURIComponent(String(id))}`, { signal: ac.signal })
+      .then((res) => {
+        const data = res.data;
         if (!data) return;
         setProduct(data);
         setActiveImageIndex(0);
         setLoading(false);
 
         // Fetch global "Follow Us" reels
-        fetch(`${API}/reels`, { signal: ac.signal })
-          .then((res) => res.json())
-          .then((all) => {
-            setGlobalReels(Array.isArray(all) ? all : []);
+        axios.get("/reels", { signal: ac.signal })
+          .then((reelsRes) => {
+            setGlobalReels(Array.isArray(reelsRes.data) ? reelsRes.data : []);
           })
           .catch((error) => {
-            if (error?.name === "AbortError") return;
+            if (axios.isCancel(error)) return;
             setGlobalReels([]);
           });
 
@@ -99,17 +86,16 @@ export default function ProductDetail() {
         const firstCategory = data?.categories && data.categories.length > 0 ? data.categories[0] : data?.category;
         if (firstCategory?.slug) {
           setLoadingSimilar(true);
-          fetch(`${API}/products?category=${firstCategory.slug}&limit=10`, { signal: ac.signal })
-            .then((res) => res.json())
-            .then((products) => {
-              const similar = Array.isArray(products)
-                ? products.filter((p) => p.id !== Number(id))
+          axios.get(`/products?category=${firstCategory.slug}&limit=10`, { signal: ac.signal })
+            .then((similarRes) => {
+              const similar = Array.isArray(similarRes.data)
+                ? similarRes.data.filter((p) => p.id !== Number(id))
                 : [];
               setSimilarProducts(similar);
               setLoadingSimilar(false);
             })
             .catch((error) => {
-              if (error?.name === "AbortError") return;
+              if (axios.isCancel(error)) return;
               console.error("Error fetching similar products:", error);
               setLoadingSimilar(false);
             });
@@ -118,10 +104,14 @@ export default function ProductDetail() {
         }
       })
       .catch((error) => {
-        if (error?.name === "AbortError") return;
+        if (axios.isCancel(error)) return;
         console.error("Error fetching product:", error);
         setProduct(null);
-        setLoadError(String(error?.message || "").startsWith("HTTP_") ? "server" : "network");
+        if (error.response && error.response.status === 404) {
+          setLoadError("not_found");
+        } else {
+          setLoadError(error.response ? "server" : "network");
+        }
         setLoading(false);
       });
 

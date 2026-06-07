@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { API } from "../../api";
+import axios, { API } from "../../api";
 import ImageUpload from "./ImageUpload";
 import VideoUpload from "./VideoUpload";
 import { useToast } from "../../context/ToastContext";
@@ -132,12 +132,9 @@ export default function ProductForm({
     if (!isEdit || !product?.id) return;
 
     let cancelled = false;
-    fetch(`${API}/products/${product.id}`)
+    axios.get(`/products/${product.id}`)
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch full product details");
-        return res.json();
-      })
-      .then((fullProduct) => {
+        const fullProduct = res.data;
         if (cancelled || !fullProduct) return;
 
         setFormData({
@@ -314,26 +311,16 @@ export default function ProductForm({
       }, OPTIMISTIC_DELAY_MS);
 
       try {
-        const token = localStorage.getItem("adminToken");
         const formDataToSend = buildFormPayload();
-        const res = await fetch(`${API}/products`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formDataToSend,
-        });
-        const data = await res.json();
+        const res = await axios.post("/products", formDataToSend);
 
-        if (res.ok) {
-          onOptimisticSuccess(tempId, data);
-          resetFormState();
-          onSave();
-        } else {
-          onOptimisticFailure(tempId);
-          toast.error(data.error || data.message || "Failed to save product. Please try again.");
-        }
+        onOptimisticSuccess(tempId, res.data);
+        resetFormState();
+        onSave();
       } catch (error) {
         onOptimisticFailure(tempId);
-        toast.error(error.message || "Failed to save product. Please try again.");
+        const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to save product. Please try again.";
+        toast.error(errorMsg);
       } finally {
         setLoading(false);
         isSubmittingRef.current = false;
@@ -342,26 +329,16 @@ export default function ProductForm({
     }
 
     try {
-      const token = localStorage.getItem("adminToken");
       const formDataToSend = buildFormPayload();
-      const url = isEdit ? `${API}/products/${product.id}` : `${API}/products`;
-      const method = isEdit ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { Authorization: `Bearer ${token}` },
-        body: formDataToSend,
-      });
-      const data = await res.json();
+      const url = isEdit ? `/products/${product.id}` : "/products";
+      const res = isEdit ? await axios.put(url, formDataToSend) : await axios.post(url, formDataToSend);
 
-      if (res.ok) {
-        toast.success(isEdit ? "Product updated" : "Product created");
-        onSave();
-        resetFormState();
-      } else {
-        toast.error(data.error || data.message || "Failed to save product");
-      }
+      toast.success(isEdit ? "Product updated" : "Product created");
+      onSave();
+      resetFormState();
     } catch (error) {
-      toast.error(error.message || "Failed to save product");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to save product";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
       isSubmittingRef.current = false;
@@ -424,17 +401,13 @@ export default function ProductForm({
       if (firstImageUrl) {
         payload.imageUrl = firstImageUrl.startsWith("http") ? firstImageUrl : `${API}${firstImageUrl.startsWith("/") ? "" : "/"}${firstImageUrl}`;
       }
-      const res = await fetch(`${API}/generate-description`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to generate");
+      const res = await axios.post("/generate-description", payload);
+      const data = res.data;
       if (data.description) setFormData((prev) => ({ ...prev, description: data.description }));
       toast.success(data.fromCache ? "Description loaded from cache" : "Description generated");
     } catch (e) {
-      toast.error(e.message || "Could not generate description");
+      const errorMsg = e.response?.data?.error || e.message || "Could not generate description";
+      toast.error(errorMsg);
     } finally {
       setGeneratingDescription(false);
     }

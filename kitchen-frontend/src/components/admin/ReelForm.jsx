@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { API } from "../../api";
+import axios from "../../api";
 import { useToast } from "../../context/ToastContext";
 
 export default function ReelForm({ reel, onSave, onCancel }) {
@@ -159,9 +159,7 @@ export default function ReelForm({ reel, onSave, onCancel }) {
     setLoading(true);
     isSubmittingRef.current = true;
     try {
-      const token = localStorage.getItem("adminToken");
-      const url = reel ? `${API}/reels/${reel.id}` : `${API}/reels`;
-      const method = reel ? "PUT" : "POST";
+      const url = reel ? `/reels/${reel.id}` : "/reels";
 
       const formDataToSend = new FormData();
       formDataToSend.append("title", form.title);
@@ -194,46 +192,40 @@ export default function ReelForm({ reel, onSave, onCancel }) {
         }
       }
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formDataToSend,
-      });
-
-      if (res.ok) {
-        toast.success(reel ? "Reel updated" : "Reel created");
-        onSave();
-        if (!reel) {
-          setForm({
-            title: "",
-            url: "",
-            thumbnail: "",
-            platform: "native",
-            isActive: true,
-            order: 0,
-            isTrending: false,
-            isFeatured: false,
-            discountPct: "",
-          });
-          setVideoFile(null);
-          setThumbnailFile(null);
-          setVideoPreview(null);
-          setThumbnailPreview(null);
-          setExistingVideoUrl(null);
-          setExistingThumbnail(null);
-          if (videoInputRef.current) videoInputRef.current.value = "";
-          if (thumbnailInputRef.current) thumbnailInputRef.current.value = "";
-          initialSnapshotRef.current = "";
-        }
+      if (reel) {
+        await axios.put(url, formDataToSend);
       } else {
-        const data = await res.json();
-        toast.error(data.error || "Failed to save reel");
+        await axios.post(url, formDataToSend);
       }
+
+      toast.success(reel ? "Reel updated" : "Reel created");
+      onSave();
+      if (!reel) {
+        setForm({
+          title: "",
+          url: "",
+          thumbnail: "",
+          platform: "native",
+          isActive: true,
+          order: 0,
+          isTrending: false,
+          isFeatured: false,
+          discountPct: "",
+        });
+        setVideoFile(null);
+        setThumbnailFile(null);
+        setVideoPreview(null);
+        setThumbnailPreview(null);
+        setExistingVideoUrl("");
+        setExistingThumbnail("");
+        if (videoInputRef.current) videoInputRef.current.value = "";
+        if (thumbnailInputRef.current) thumbnailInputRef.current.value = "";
+      }
+      initialSnapshotRef.current = "";
     } catch (error) {
       console.error("Error saving reel:", error);
-      toast.error("Error saving reel. Please try again.");
+      const errorMsg = error.response?.data?.error || "Failed to save reel. Please try again.";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
       isSubmittingRef.current = false;

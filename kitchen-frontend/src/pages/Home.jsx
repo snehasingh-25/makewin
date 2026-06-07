@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { API } from "../api";
+import axios from "../api";
 import HeroSection from "../components/HeroSection";
 import HeroPromoCarousel from "../components/HeroPromoCarousel";
 import { MemoReelCarousel as ReelCarousel } from "../components/ReelCarousel";
@@ -22,10 +22,9 @@ export default function Home() {
     const ac = new AbortController();
 
     // Fetch products
-    fetch(`${API}/products`, { signal: ac.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        const list = shuffleArray(Array.isArray(data) ? data : []);
+    axios.get("/products", { signal: ac.signal })
+      .then((res) => {
+        const list = shuffleArray(Array.isArray(res.data) ? res.data : []);
         setProducts(list);
         setLoading((prev) => ({ ...prev, products: false }));
       })
@@ -34,10 +33,9 @@ export default function Home() {
       });
 
     // Fetch reels
-    fetch(`${API}/reels`, { signal: ac.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        setReels(Array.isArray(data) ? data : []);
+    axios.get("/reels", { signal: ac.signal })
+      .then((res) => {
+        setReels(Array.isArray(res.data) ? res.data : []);
         setLoading((prev) => ({ ...prev, reels: false }));
       })
       .catch(() => {
@@ -45,10 +43,9 @@ export default function Home() {
       });
 
     // Fetch primary banners for hero section
-    fetch(`${API}/banners?type=primary`, { signal: ac.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        setPrimaryBanners(Array.isArray(data) ? data : []);
+    axios.get("/banners?type=primary", { signal: ac.signal })
+      .then((res) => {
+        setPrimaryBanners(Array.isArray(res.data) ? res.data : []);
         setLoading((prev) => ({ ...prev, banners: false }));
       })
       .catch(() => {
@@ -56,10 +53,9 @@ export default function Home() {
       });
 
     // Fetch secondary banners for mid-page promos
-    fetch(`${API}/banners?type=secondary`, { signal: ac.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        setSecondaryBanners(Array.isArray(data) ? data : []);
+    axios.get("/banners?type=secondary", { signal: ac.signal })
+      .then((res) => {
+        setSecondaryBanners(Array.isArray(res.data) ? res.data : []);
       })
       .catch(() => { });
 

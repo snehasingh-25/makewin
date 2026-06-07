@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { API } from "../../api";
+import axios, { API } from "../../api";
 import { useToast } from "../../context/ToastContext";
 
 export default function DealerForm({ dealer, onSave, onCancel }) {
@@ -128,9 +128,7 @@ export default function DealerForm({ dealer, onSave, onCancel }) {
     isSubmittingRef.current = true;
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const url = dealer ? `${API}/dealers/${dealer.id}` : `${API}/dealers`;
-      const method = dealer ? "PUT" : "POST";
+      const url = dealer ? `/dealers/${dealer.id}` : "/dealers";
 
       const formDataToSend = new FormData();
       formDataToSend.append("firm", formData.firm);
@@ -153,28 +151,21 @@ export default function DealerForm({ dealer, onSave, onCancel }) {
         formDataToSend.append("existingImage2", existingImage2Url);
       }
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formDataToSend,
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        toast.success(dealer ? "Dealer updated" : "Dealer created");
-        onSave();
-        setFormData({ firm: "", city: "", location: "", address: "", phone: "" });
-        removeImage1();
-        removeImage2();
-        initialSnapshotRef.current = "";
+      if (dealer) {
+        await axios.put(url, formDataToSend);
       } else {
-        toast.error(data.error || data.message || "Failed to save dealer");
+        await axios.post(url, formDataToSend);
       }
+
+      toast.success(dealer ? "Dealer updated" : "Dealer created");
+      onSave();
+      setFormData({ firm: "", city: "", location: "", address: "", phone: "" });
+      removeImage1();
+      removeImage2();
+      initialSnapshotRef.current = "";
     } catch (error) {
-      toast.error(error.message || "Failed to save dealer");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to save dealer";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
       isSubmittingRef.current = false;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { API } from "../api";
+import axios from "../api";
 import { useToast } from "../context/ToastContext";
 import { FiPhone, FiMessageCircle, FiMail, FiFacebook, FiInstagram, FiYoutube, FiLinkedin } from "react-icons/fi";
 
@@ -24,23 +24,15 @@ export default function Contact() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const response = await fetch(`${API}/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          message: form.message,
-          phone: ""
-        }),
+      await axios.post("/contact", {
+        name: form.name,
+        email: form.email,
+        message: form.message,
+        phone: ""
       });
 
-      if (response.ok) {
-        setSent(true);
-        toast.success("Message sent successfully");
-      } else {
-        toast.error("Failed to send message. Please try again.");
-      }
+      setSent(true);
+      toast.success("Message sent successfully");
     } catch (error) {
       toast.error("Error sending message. Please try again.");
     } finally {

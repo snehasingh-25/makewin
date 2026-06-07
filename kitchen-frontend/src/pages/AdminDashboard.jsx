@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { API } from "../api";
+import axios, { API } from "../api";
 import { useToast } from "../context/ToastContext";
 import ProductForm from "../components/admin/ProductForm";
 import CategoryForm from "../components/admin/CategoryForm";
@@ -53,74 +53,38 @@ export default function AdminDashboard() {
         return;
       }
 
-      const headers = { Authorization: `Bearer ${token}` };
-
       if (activeTab === "products") {
         const [productsRes, categoriesRes] = await Promise.all([
-          fetch(`${API}/products`),
-          fetch(`${API}/categories`),
+          axios.get("/products"),
+          axios.get("/categories"),
         ]);
 
-        if (!productsRes.ok) {
-          const errorData = await productsRes.json();
-          console.error("Error fetching products:", errorData);
-          toast.error(`Error loading products: ${errorData.error || productsRes.statusText}`);
-          setProducts([]);
-        } else {
-          const productsData = await productsRes.json();
-          setProducts(Array.isArray(productsData) ? productsData : []);
-        }
-
-        if (categoriesRes.ok) {
-          const categoriesData = await categoriesRes.json();
-          setCategories(Array.isArray(categoriesData) ? categoriesData : []);
-        }
+        setProducts(Array.isArray(productsRes.data) ? productsRes.data : []);
+        setCategories(Array.isArray(categoriesRes.data) ? categoriesRes.data : []);
       } else if (activeTab === "categories") {
-        const res = await fetch(`${API}/categories`); // Public endpoint
-        if (res.ok) {
-          const data = await res.json();
-          setCategories(data);
-        }
+        const res = await axios.get("/categories");
+        setCategories(res.data);
       } else if (activeTab === "messages") {
-        const res = await fetch(`${API}/contact`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setMessages(data);
-        } else if (res.status === 401) {
-          toast.error("Session expired. Please login again.");
-          logout();
-        }
+        const res = await axios.get("/contact");
+        setMessages(res.data);
       } else if (activeTab === "reels") {
-        const res = await fetch(`${API}/reels/all`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setReels(data);
-        } else if (res.status === 401) {
-          toast.error("Session expired. Please login again.");
-          logout();
-        }
+        const res = await axios.get("/reels/all");
+        setReels(res.data);
       } else if (activeTab === "banners") {
-        const res = await fetch(`${API}/banners/all`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setBanners(data);
-        } else if (res.status === 401) {
-          toast.error("Session expired. Please login again.");
-          logout();
-        }
+        const res = await axios.get("/banners/all");
+        setBanners(res.data);
       } else if (activeTab === "dealers") {
-        const res = await fetch(`${API}/dealers/all`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setDealers(data);
-        } else if (res.status === 401) {
-          toast.error("Session expired. Please login again.");
-          logout();
-        }
+        const res = await axios.get("/dealers/all");
+        setDealers(res.data);
       }
     } catch (error) {
       console.error("Error loading data:", error);
-      toast.error("Error loading data. Please try again.");
+      if (error.response && error.response.status === 401) {
+        toast.error("Session expired. Please login again.");
+        logout();
+      } else {
+        toast.error("Error loading data. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

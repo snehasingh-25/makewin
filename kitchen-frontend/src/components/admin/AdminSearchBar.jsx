@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import Fuse from "fuse.js";
-import { API } from "../../api";
+import axios from "../../api";
 
 const FUSE_OPTIONS = { threshold: 0.4, includeScore: true, minMatchCharLength: 2 };
 
@@ -24,8 +24,8 @@ export default function AdminSearchBar({
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API}/products`).then((r) => r.json()).then((d) => (Array.isArray(d) ? d : [])).catch(() => []),
-      fetch(`${API}/categories`).then((r) => r.json()).then((d) => (Array.isArray(d) ? d : [])).catch(() => []),
+      axios.get("/products").then((res) => (Array.isArray(res.data) ? res.data : [])).catch(() => []),
+      axios.get("/categories").then((res) => (Array.isArray(res.data) ? res.data : [])).catch(() => []),
     ]).then(([products, categories]) => {
       setAllProducts(products);
       setAllCategories(categories);

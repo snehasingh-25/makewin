@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { API } from "../api";
+import axios from "../api";
 import ProductCard from "./ProductCard";
 import ProductFilters from "./ProductFilters";
 import SortDropdown from "./SortDropdown";
@@ -19,35 +19,35 @@ function ProductListingInner({
   const [sortOpen, setSortOpen] = useState(false);
 
   // Build API URL with filters and sort
-  const apiUrl = useMemo(() => {
-    const params = new URLSearchParams();
+  // Build API params with filters and sort
+  const apiParams = useMemo(() => {
+    const params = {};
 
     // Add filters
-    if (filters.category) params.append("category", filters.category);
-    if (filters.search) params.append("search", filters.search);
+    if (filters.category) params.category = filters.category;
+    if (filters.search) params.search = filters.search;
 
     // Add sort (disable shuffle when sorting)
     if (sort && sort !== "relevance") {
-      params.append("sort", sort);
-      params.append("shuffle", "false");
+      params.sort = sort;
+      params.shuffle = "false";
     }
 
-    return `${API}/products?${params.toString()}`;
+    return params;
   }, [filters, sort]);
 
   useEffect(() => {
     const ac = new AbortController();
 
-    fetch(apiUrl, { signal: ac.signal })
-      .then(res => res.json())
-      .then(data => {
-        const arr = Array.isArray(data) ? data : [];
+    axios.get("/products", { params: apiParams, signal: ac.signal })
+      .then(res => {
+        const arr = Array.isArray(res.data) ? res.data : [];
         const isDefaultSort = !sort || sort === "relevance";
         setProducts(isDefaultSort ? shuffleArray(arr) : arr);
         setLoading(false);
       })
       .catch((error) => {
-        if (error.name !== "AbortError") {
+        if (!axios.isCancel(error)) {
           console.error("Error fetching products:", error);
           setProducts([]);
         }
@@ -55,7 +55,7 @@ function ProductListingInner({
       });
 
     return () => ac.abort();
-  }, [apiUrl]);
+  }, [apiParams, sort]);
 
   const handleFiltersChange = (newFilters) => {
     setLoading(true);

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { API } from "../../api";
+import axios from "../../api";
 import { useToast } from "../../context/ToastContext";
 
 export default function BannerForm({ banner, onSave, onCancel }) {
@@ -102,9 +102,7 @@ export default function BannerForm({ banner, onSave, onCancel }) {
     isSubmittingRef.current = true;
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const url = banner ? `${API}/banners/${banner.id}` : `${API}/banners`;
-      const method = banner ? "PUT" : "POST";
+      const url = banner ? `/banners/${banner.id}` : "/banners";
 
       const formDataToSend = new FormData();
       formDataToSend.append("title", formData.title);
@@ -123,32 +121,25 @@ export default function BannerForm({ banner, onSave, onCancel }) {
         formDataToSend.append("existingImage", existingImageUrl);
       }
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formDataToSend,
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        toast.success(banner ? "Banner updated" : "Banner created");
-        onSave();
-        setFormData({ title: "", subtitle: "", ctaText: "", ctaLink: "", bannerType: "primary", isActive: true, order: 0 });
-        setImage(null);
-        setImagePreview(null);
-        setExistingImageUrl(null);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-        initialSnapshotRef.current = "";
+      if (banner) {
+        await axios.put(url, formDataToSend);
       } else {
-        toast.error(data.error || data.message || "Failed to save banner");
+        await axios.post(url, formDataToSend);
       }
+
+      toast.success(banner ? "Banner updated" : "Banner created");
+      onSave();
+      setFormData({ title: "", subtitle: "", ctaText: "", ctaLink: "", bannerType: "primary", isActive: true, order: 0 });
+      setImage(null);
+      setImagePreview(null);
+      setExistingImageUrl(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      initialSnapshotRef.current = "";
     } catch (error) {
-      toast.error(error.message || "Failed to save banner");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to save banner";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
       isSubmittingRef.current = false;

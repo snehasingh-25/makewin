@@ -1,4 +1,4 @@
-import { API } from "../../api";
+import axios from "../../api";
 import { useToast } from "../../context/ToastContext";
 import OrderableList from "./OrderableList";
 import { cloneProductForDuplicate } from "./productUtils";
@@ -19,23 +19,12 @@ export default function ProductList({ products, onEdit, onDelete }) {
     }
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API}/products/${product.id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        toast.success("Product deleted");
-        onDelete(product);
-      } else {
-        const data = await res.json();
-        toast.error(data.error || data.message || "Failed to delete product");
-      }
+      await axios.delete(`/products/${product.id}`);
+      toast.success("Product deleted");
+      onDelete(product);
     } catch (error) {
-      toast.error(error.message || "Failed to delete product");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to delete product";
+      toast.error(errorMsg);
     }
   };
 

@@ -1,4 +1,4 @@
-import { API } from "../../api";
+import axios from "../../api";
 import { useToast } from "../../context/ToastContext";
 import OrderableList from "./OrderableList";
 
@@ -9,23 +9,12 @@ export default function CategoryList({ categories, onEdit, onDelete }) {
     if (!confirm("Are you sure you want to delete this category?")) return;
 
     try {
-      const token = localStorage.getItem("adminToken");
-      const res = await fetch(`${API}/categories/${categoryId}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (res.ok) {
-        toast.success("Category deleted");
-        onDelete();
-      } else {
-        const data = await res.json();
-        toast.error(data.error || data.message || "Failed to delete category");
-      }
+      await axios.delete(`/categories/${categoryId}`);
+      toast.success("Category deleted");
+      onDelete();
     } catch (error) {
-      toast.error(error.message || "Failed to delete category");
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to delete category";
+      toast.error(errorMsg);
     }
   };
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { API } from "../api";
+import axios from "../api";
 import { shuffleArray } from "../utils/shuffle";
 
 export default function Products() {
@@ -8,10 +8,9 @@ export default function Products() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API}/products`)
-      .then(res => res.json())
-      .then(data => {
-        setProducts(shuffleArray(data));
+    axios.get("/products")
+      .then(res => {
+        setProducts(shuffleArray(res.data));
         setLoading(false);
       })
       .catch(() => {

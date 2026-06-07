@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { FiMapPin, FiPhone } from "react-icons/fi";
-import { API } from "../api";
+import axios, { API } from "../api";
 import fallbackImage1 from "../assets/hero-kitchen.jpeg";
 import fallbackImage2 from "../assets/product-kitchen.jpeg";
 
@@ -13,9 +13,9 @@ export default function DealerLocator() {
   const [city, setCity] = useState(null);
 
   useEffect(() => {
-    fetch(`${API}/dealers`)
-      .then((res) => res.json())
-      .then((data) => {
+    axios.get("/dealers")
+      .then((res) => {
+        const data = res.data;
         setDealers(Array.isArray(data) ? data : []);
         setLoading(false);
       })

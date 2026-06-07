@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { API } from "../api";
+import axios from "../api";
 
 /**
  * Extracts Instagram post ID from URL
@@ -18,14 +18,8 @@ function getInstagramPostId(url) {
 async function fetchInstagramThumbnail(url) {
   try {
     // Use backend proxy to avoid CORS issues
-    const response = await fetch(`${API}/instagram/thumbnail?url=${encodeURIComponent(url)}`);
-    
-    if (!response.ok) {
-      throw new Error("Failed to fetch thumbnail");
-    }
-    
-    const data = await response.json();
-    return data.thumbnail_url || null;
+    const response = await axios.get(`/instagram/thumbnail?url=${encodeURIComponent(url)}`);
+    return response.data.thumbnail_url || null;
   } catch (error) {
     console.error("Error fetching Instagram thumbnail:", error);
     return null;

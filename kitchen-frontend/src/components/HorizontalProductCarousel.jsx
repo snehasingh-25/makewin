@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { API } from "../api";
+import axios from "../api";
 import { shuffleArray } from "../utils/shuffle";
 import ProductCard from "./ProductCard";
 import CarouselArrow from "./CarouselArrow";
@@ -82,17 +82,16 @@ export default function HorizontalProductCarousel({
   useEffect(() => {
     if (hasProvidedProducts || idsToFetch.length === 0 || fetchedByKey[idsKey] !== undefined) return;
     const ac = new AbortController();
-    fetch(`${API}/products?ids=${idsToFetch.join(",")}`, { signal: ac.signal })
-      .then((res) => res.json())
-      .then((data) => {
-        const list = Array.isArray(data) ? data : [];
+    axios.get("/products", { params: { ids: idsToFetch.join(",") }, signal: ac.signal })
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : [];
         setFetchedByKey((prev) => ({
           ...prev,
           [idsKey]: shuffleFetched ? shuffleArray(list) : list,
         }));
       })
       .catch((err) => {
-        if (err?.name !== "AbortError") console.error("HorizontalProductCarousel fetch error:", err);
+        if (!axios.isCancel(err)) console.error("HorizontalProductCarousel fetch error:", err);
         setFetchedByKey((prev) => ({ ...prev, [idsKey]: [] }));
       });
     return () => ac.abort();
