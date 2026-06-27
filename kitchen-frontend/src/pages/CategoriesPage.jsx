@@ -98,32 +98,6 @@ export default function CategoriesPage() {
     return () => ac.abort();
   }, [slug]);
 
-  // ── Slug / filtered view ──
-  if (slug) {
-    if (loading) {
-      return (
-        <div className="min-h-screen bg-cream px-6 sm:px-10 lg:px-16 pt-10">
-          <style>{SK_STYLE}</style>
-          <div className="sk h-3 w-32 rounded mb-8" />
-          <div className="sk h-10 w-56 rounded mb-10" />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i}>
-                <div className="sk aspect-square rounded-lg w-full" />
-                <div className="mt-3 space-y-2">
-                  <div className="sk h-4 w-3/4 rounded" />
-                  <div className="sk h-3 w-1/3 rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-    return <CategoryFilteredView slug={slug} categories={categories} />;
-  }
-
-  // ── Category product counts ──
   const categoryCountMap = useMemo(() => {
     const map = {};
     allProducts.forEach((p) => {
@@ -136,7 +110,14 @@ export default function CategoriesPage() {
     return map;
   }, [allProducts]);
 
-  const featuredProducts = useMemo(() => allProducts.slice(0, 8), [allProducts]);
+  const featuredProducts = useMemo(
+    () => (Array.isArray(allProducts) ? allProducts.filter((product) => Boolean(product.isFeatured)) : []),
+    [allProducts]
+  );
+  const regularProducts = useMemo(
+    () => (Array.isArray(allProducts) ? allProducts.filter((product) => !product.isFeatured) : []),
+    [allProducts]
+  );
 
   // Hero image: banner first, then fall back to first product image
   const heroImageUrl =
@@ -294,7 +275,7 @@ export default function CategoriesPage() {
                   )}
 
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/15 to-transparent" />
 
                   {/* Bottom content */}
                   <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
@@ -334,30 +315,20 @@ export default function CategoriesPage() {
 
       {/* ── Section 3: Featured Products ──────────────────────────────────── */}
       {featuredProducts.length > 0 && (
-        <section id="products" className="px-6 sm:px-10 lg:px-16 xl:px-20 py-12 lg:py-16">
-          {/* Header row */}
-          <div className="flex items-end justify-between mb-8 sm:mb-10">
-            <div>
-              <p
-                className="text-[10px] tracking-[0.25em] uppercase mb-2"
-                style={{ color: "var(--olive)" }}
-              >
-                Our Collection
-              </p>
-              <h2
-                className="font-display text-3xl sm:text-4xl lg:text-5xl"
-                style={{ color: "var(--ink)" }}
-              >
-                Featured Products
-              </h2>
-            </div>
-            <Link
-              to="/search"
-              className="hidden sm:flex items-center gap-2 text-[10px] tracking-[0.18em] uppercase pb-0.5 border-b shrink-0 ml-6 transition-opacity hover:opacity-70"
-              style={{ color: "var(--olive)", borderColor: "var(--olive)" }}
+        <section className="px-6 sm:px-10 lg:px-16 xl:px-20 py-12 lg:py-16">
+          <div className="mb-8 sm:mb-10">
+            <p
+              className="text-[10px] tracking-[0.25em] uppercase mb-2"
+              style={{ color: "var(--olive)" }}
             >
-              View All Products <span>→</span>
-            </Link>
+              Our Collection
+            </p>
+            <h2
+              className="font-display text-3xl sm:text-4xl lg:text-5xl"
+              style={{ color: "var(--ink)" }}
+            >
+              Featured Products
+            </h2>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
@@ -365,14 +336,31 @@ export default function CategoriesPage() {
               <ProductCard key={product.id} product={product} catalogue />
             ))}
           </div>
+        </section>
+      )}
 
-          <Link
-            to="/search"
-            className="sm:hidden flex items-center justify-center gap-2 text-[10px] tracking-[0.18em] uppercase mt-6 py-2 border-b self-center w-max mx-auto"
-            style={{ color: "var(--olive)", borderColor: "var(--olive)" }}
-          >
-            View All Products →
-          </Link>
+      {regularProducts.length > 0 && (
+        <section id="products" className="px-6 sm:px-10 lg:px-16 xl:px-20 pb-12 lg:pb-16">
+          <div className="mb-8 sm:mb-10">
+            <p
+              className="text-[10px] tracking-[0.25em] uppercase mb-2"
+              style={{ color: "var(--olive)" }}
+            >
+              Products
+            </p>
+            <h2
+              className="font-display text-3xl sm:text-4xl lg:text-5xl"
+              style={{ color: "var(--ink)" }}
+            >
+              Products
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            {regularProducts.map((product) => (
+              <ProductCard key={product.id} product={product} catalogue />
+            ))}
+          </div>
         </section>
       )}
 

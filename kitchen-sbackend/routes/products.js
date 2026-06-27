@@ -5,6 +5,10 @@ import prisma from "../prisma.js";
 import { cacheMiddleware, invalidateCache } from "../utils/cache.js";
 const router = express.Router();
 
+function parseBoolean(value) {
+  return value === true || value === "true" || value === 1 || value === "1";
+}
+
 // Fisher-Yates shuffle algorithm for randomizing array
 function shuffleArray(array) {
   const shuffled = [...array];
@@ -204,7 +208,7 @@ router.post("/", verifyToken, uploadProductMedia, async (req, res) => {
   try {
     invalidateCache("/products");
     
-    const { name, description, categoryIds, keywords, existingImages, existingVideos } = req.body;
+    const { name, description, categoryIds, keywords, existingImages, existingVideos, isFeatured } = req.body;
 
     const imageFiles = req.files?.images || [];
     const uploadedImageUrls = [];
@@ -233,6 +237,7 @@ router.post("/", verifyToken, uploadProductMedia, async (req, res) => {
 
     const keywordsArray = keywords ? JSON.parse(keywords) : [];
     const categoryIdsArray = categoryIds ? JSON.parse(categoryIds) : [];
+    const featured = parseBoolean(isFeatured);
 
     const product = await prisma.product.create({
       data: {
@@ -241,6 +246,7 @@ router.post("/", verifyToken, uploadProductMedia, async (req, res) => {
         images: JSON.stringify(imageUrls),
         videos: videoUrls.length > 0 ? JSON.stringify(videoUrls) : null,
         keywords: JSON.stringify(keywordsArray),
+        isFeatured: featured,
         categories: {
           create: categoryIdsArray.map(categoryId => ({
             categoryId: Number(categoryId)
@@ -273,7 +279,7 @@ router.put("/:id", verifyToken, uploadProductMedia, async (req, res) => {
   try {
     invalidateCache("/products");
     
-    const { name, description, categoryIds, keywords, existingImages, existingVideos, imageOrder } = req.body;
+    const { name, description, categoryIds, keywords, existingImages, existingVideos, imageOrder, isFeatured } = req.body;
 
     const existingProduct = await prisma.product.findUnique({
       where: { id: Number(req.params.id) },
@@ -303,6 +309,7 @@ router.put("/:id", verifyToken, uploadProductMedia, async (req, res) => {
     }
 
     const keywordsArray = keywords ? JSON.parse(keywords) : [];
+    const featured = parseBoolean(isFeatured);
 
     await prisma.productCategory.deleteMany({
       where: { productId: Number(req.params.id) },
@@ -318,6 +325,7 @@ router.put("/:id", verifyToken, uploadProductMedia, async (req, res) => {
         images: JSON.stringify(imageUrls),
         videos: videoUrls.length > 0 ? JSON.stringify(videoUrls) : null,
         keywords: JSON.stringify(keywordsArray),
+        isFeatured: featured,
         categories: {
           create: categoryIdsArray.map(categoryId => ({
             categoryId: Number(categoryId)

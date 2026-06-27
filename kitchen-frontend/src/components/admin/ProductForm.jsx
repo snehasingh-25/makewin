@@ -40,6 +40,7 @@ export default function ProductForm({
     name: "",
     description: "",
     keywords: "",
+    isFeatured: false,
   });
 
   const [imageItems, setImageItems] = useState([]); // { type: 'existing', url } | { type: 'new', id, file, objectURL? }
@@ -72,6 +73,7 @@ export default function ProductForm({
         name: product.name || "",
         description: product.description || "",
         keywords: product.keywords ? (Array.isArray(product.keywords) ? product.keywords.join(", ") : product.keywords) : "",
+        isFeatured: Boolean(product.isFeatured),
       });
       setImageItems((prev) => {
         prev.forEach((i) => {
@@ -94,6 +96,7 @@ export default function ProductForm({
         name: "",
         description: "",
         keywords: "",
+        isFeatured: false,
       });
       setImageItems([]);
       setVideos([]);
@@ -109,11 +112,13 @@ export default function ProductForm({
             name: product.name || "",
             description: product.description || "",
             keywords: product.keywords ? (Array.isArray(product.keywords) ? product.keywords.join(", ") : product.keywords) : "",
+            isFeatured: Boolean(product?.isFeatured),
           }
           : {
             name: "",
             description: "",
             keywords: "",
+            isFeatured: false,
           },
         existingVideos: product?.videos && Array.isArray(product.videos) ? product.videos : [],
         selectedCategories:
@@ -143,6 +148,7 @@ export default function ProductForm({
           keywords: fullProduct.keywords
             ? (Array.isArray(fullProduct.keywords) ? fullProduct.keywords.join(", ") : fullProduct.keywords)
             : "",
+          isFeatured: Boolean(fullProduct.isFeatured),
         });
 
         setImageItems((prev) => {
@@ -234,6 +240,7 @@ export default function ProductForm({
     }
     formDataToSend.append("keywords", JSON.stringify(keywordsArray));
     formDataToSend.append("categoryIds", JSON.stringify(selectedCategories));
+    formDataToSend.append("isFeatured", String(Boolean(formData.isFeatured)));
 
     const orderedExisting = imageItems.filter((i) => i.type === "existing").map((i) => i.url);
     const orderedNewFiles = imageItems.filter((i) => i.type === "new").map((i) => i.file);
@@ -264,6 +271,7 @@ export default function ProductForm({
       order: 0,
       images: imageUrls.filter(Boolean),
       categories: resolvedCategories,
+      isFeatured: Boolean(formData.isFeatured),
     };
   };
 
@@ -272,6 +280,7 @@ export default function ProductForm({
       name: "",
       description: "",
       keywords: "",
+      isFeatured: false,
     });
     setImageItems((prev) => {
       prev.forEach((i) => {
@@ -485,6 +494,17 @@ export default function ProductForm({
           {selectedCategories.length === 0 && (
             <p className="text-xs text-gray-500 mt-1">Select at least one category.</p>
           )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            id="isFeatured"
+            type="checkbox"
+            checked={Boolean(formData.isFeatured)}
+            onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+            className="w-4 h-4 text-olive rounded focus:ring-olive"
+          />
+          <label htmlFor="isFeatured" className="text-sm font-semibold text-gray-700">Mark as featured product</label>
         </div>
 
         <div>

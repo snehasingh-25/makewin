@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "../api";
 import HeroPromoCarousel from "../components/HeroPromoCarousel";
 import { MemoReelCarousel as ReelCarousel } from "../components/ReelCarousel";
-import HorizontalProductCarousel from "../components/HorizontalProductCarousel";
+import ProductCard from "../components/ProductCard";
 import { shuffleArray } from "../utils/shuffle";
 
 // ─── Intersection-observer fade-up hook ──────────────────────────────────────
@@ -98,7 +98,7 @@ export default function Home() {
       .then((res) => {
         setSecondaryBanners(Array.isArray(res.data) ? res.data : []);
       })
-      .catch(() => {});
+      .catch(() => { });
 
     return () => ac.abort();
   }, []);
@@ -113,6 +113,11 @@ export default function Home() {
   const visibleProducts = useMemo(
     () => (Array.isArray(products) ? products.slice(0, visibleProductsCount) : []),
     [products, visibleProductsCount]
+  );
+
+  const featuredProducts = useMemo(
+    () => (Array.isArray(visibleProducts) ? visibleProducts.slice(0, 8) : []),
+    [visibleProducts]
   );
 
   const isInitialLoad = loading.products || loading.reels || loading.banners;
@@ -194,50 +199,10 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          S2 — BRAND STATEMENT
-      ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 py-28 sm:py-36 lg:py-44">
-        <FadeUp delay={0}>
-          <p
-            className="text-[9px] tracking-[0.35em] uppercase mb-10 lg:mb-14"
-            style={{ color: "var(--olive)" }}
-          >
-            Makewin Kitchens
-          </p>
-        </FadeUp>
-
-        <FadeUp delay={80}>
-          <h2
-            className="font-display leading-[1.05] mb-14 lg:mb-20"
-            style={{
-              fontSize: "clamp(2.6rem, 7vw, 7.5rem)",
-              color: "var(--ink)",
-              maxWidth: "22ch",
-            }}
-          >
-            A workshop where<br />
-            <em style={{ color: "var(--olive)" }}>aluminium meets art.</em>
-          </h2>
-        </FadeUp>
-
-        <FadeUp delay={160}>
-          <p
-            className="text-sm sm:text-base leading-relaxed max-w-md"
-            style={{ color: "oklch(45% .015 80)" }}
-          >
-            Welcome to Makewin Aluminum Kitchen Factory. From our fully automatic
-            plant in Bhilwara, Rajasthan, we design and manufacture high-quality
-            aluminum furniture — built to outlive trends and elevate every space,
-            residential or commercial.
-          </p>
-        </FadeUp>
-      </section>
-
-      {/* ══════════════════════════════════════════════════════════
           S3 — WHAT WE DO
           3 tall portrait cards. Name-only overlays. Hover reveal.
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 pb-28 sm:pb-36 lg:pb-44">
+      <section className="m-10 bg-cream px-8 sm:px-14 lg:px-20">
         <FadeUp>
           <p
             className="text-[9px] tracking-[0.35em] uppercase mb-10 lg:mb-14"
@@ -249,9 +214,9 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
           {[
-            { label: "Modular\nKitchens",  link: "/categories", img: "/about-kitchens.png",  alt: "MakeWin Modular Kitchen" },
-            { label: "Wardrobes",           link: "/categories", img: "/about-wardrobes.png", alt: "MakeWin Wardrobes" },
-            { label: "Interior\nSolutions", link: "/categories", img: "/about-interior.png",  alt: "MakeWin Interior Solutions" },
+            { label: "Modular\nKitchens", link: "/categories", img: "/about-kitchens.png", alt: "MakeWin Modular Kitchen" },
+            { label: "Wardrobes", link: "/categories", img: "/about-wardrobes.png", alt: "MakeWin Wardrobes" },
+            { label: "Interior\nSolutions", link: "/categories", img: "/about-interior.png", alt: "MakeWin Interior Solutions" },
           ].map(({ label, link, img, alt }, i) => (
             <FadeUp key={label} delay={i * 110} className="w-full">
               <Link
@@ -300,84 +265,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════
-          S4 — FACTORY
-          Two columns: image left, text + 3 trust indicators right.
-      ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 pb-28 sm:pb-36 lg:pb-44">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-
-          <FadeUp className="w-full">
-            <div className="w-full">
-              <div className="relative w-full overflow-hidden aspect-[4/3]">
-                <img
-                  src="/about-factory.png"
-                  alt="MakeWin Factory"
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-[1.03]"
-                />
-              </div>
-              <p
-                className="text-[9px] tracking-[0.3em] uppercase mt-4"
-                style={{ color: "oklch(55% .015 80)" }}
-              >
-                Bhilwara, Rajasthan
-              </p>
-            </div>
-          </FadeUp>
-
-          <FadeUp delay={120} className="w-full">
-            <div>
-              <p
-                className="text-[9px] tracking-[0.35em] uppercase mb-8"
-                style={{ color: "var(--olive)" }}
-              >
-                Our Factory
-              </p>
-
-              <h2
-                className="font-display leading-tight mb-8"
-                style={{ fontSize: "clamp(2rem, 4vw, 4.5rem)", color: "var(--ink)" }}
-              >
-                Built in India.<br />Built to Last.
-              </h2>
-
-              <p
-                className="text-sm sm:text-base leading-relaxed mb-12 max-w-sm"
-                style={{ color: "oklch(45% .015 80)" }}
-              >
-                Our fully automatic plant in Bhilwara crafts every piece from
-                100% aluminium — no wood, no compromise. Water resistant, termite
-                proof, and built for decades of daily use.
-              </p>
-
-              <div className="space-y-7">
-                {[
-                  { stat: "10,000+",          desc: "Sq. Ft. Manufacturing Plant" },
-                  { stat: "Premium Materials", desc: "100% Aluminium, 0% Wood" },
-                  { stat: "Made In India",     desc: "Factory-finished in Bhilwara" },
-                ].map(({ stat, desc }) => (
-                  <div
-                    key={stat}
-                    className="pl-5 border-l"
-                    style={{ borderColor: "var(--olive)" }}
-                  >
-                    <p className="font-display text-xl" style={{ color: "var(--ink)" }}>
-                      {stat}
-                    </p>
-                    <p
-                      className="text-xs mt-0.5 tracking-wide"
-                      style={{ color: "oklch(55% .015 80)" }}
-                    >
-                      {desc}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </FadeUp>
-
+      <div className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
+        <div className="flex items-end justify-between mb-8 sm:mb-10">
+          <div>
+            <p
+              className="text-[9px] tracking-[0.35em] uppercase mb-2"
+              style={{ color: "var(--olive)" }}
+            >
+              Our Collection
+            </p>
+            <h2
+              className="font-display leading-tight"
+              style={{ fontSize: "clamp(1.8rem, 3.8vw, 2.8rem)", color: "var(--ink)" }}
+            >
+              Featured Products
+            </h2>
+          </div>
+          <Link
+            to="/categories"
+            className="hidden sm:flex items-center gap-2 text-[10px] tracking-[0.18em] uppercase pb-0.5 border-b transition-opacity hover:opacity-70"
+            style={{ color: "var(--olive)", borderColor: "var(--olive)" }}
+          >
+            View All <span>→</span>
+          </Link>
         </div>
-      </section>
+
+        {featuredProducts.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} catalogue />
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm" style={{ color: "oklch(45% .015 80)" }}>
+            No featured products available right now.
+          </div>
+        )}
+      </div>
 
       {/* ══════════════════════════════════════════════════════════
           S5 — EXPERIENCE CENTRE
@@ -478,15 +402,6 @@ export default function Home() {
         {!isInitialLoad && (
           <>
             <HeroPromoCarousel banners={primaryBanners} />
-
-            <div className="px-1 sm:px-2 lg:px-4">
-              <HorizontalProductCarousel
-                title="Products"
-                products={visibleProducts}
-                isLoading={loading.products}
-                sectionClassName="mt-6 lg:mt-8"
-              />
-            </div>
 
             <HeroPromoCarousel banners={secondaryBanners} />
           </>
