@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { memo, useMemo } from "react";
 
-function ProductCard({ product, compact = false }) {
+function ProductCard({ product, compact = false, catalogue = false }) {
   const images = useMemo(() => {
     if (!product?.images) return [];
     if (Array.isArray(product.images)) return product.images;
@@ -15,6 +15,76 @@ function ProductCard({ product, compact = false }) {
 
   const img = images[0] || null;
   const subtitle = product.categories?.[0]?.name || product.categories?.[0]?.category?.name || "Premium Craftsmanship";
+
+  // Format price for Indian locale if available
+  const formattedPrice = product.price
+    ? `₹${Number(product.price).toLocaleString("en-IN")}`
+    : null;
+
+  if (catalogue) {
+    return (
+      <Link to={`/product/${product.id}`} className="group block">
+        <div className="relative overflow-hidden rounded-sm bg-cream">
+          {img ? (
+            <img
+              src={img}
+              alt={product.name}
+              className="aspect-square w-full object-cover group-hover:scale-105 transition duration-700"
+              loading="lazy"
+            />
+          ) : (
+            <div className="aspect-square w-full flex items-center justify-center bg-cream">
+              <img
+                src="/logo.png"
+                alt="MakeWin Logo"
+                className="w-16 h-16 object-contain opacity-40"
+              />
+            </div>
+          )}
+
+          {/* Collection / category label at top-left */}
+          <div className="absolute top-3 left-3">
+            <span
+              className="text-[9px] tracking-[0.18em] uppercase px-2 py-1"
+              style={{ backgroundColor: "white", color: "var(--ink)" }}
+            >
+              {subtitle}
+            </span>
+          </div>
+
+          {/* Heart / wishlist icon at top-right */}
+          <button
+            onClick={(e) => e.preventDefault()}
+            className="absolute top-2.5 right-2.5 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 hover:bg-white transition-colors"
+            aria-label="Save to wishlist"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div className="pt-3">
+          <h3
+            className="font-display text-base sm:text-lg truncate"
+            style={{ color: "var(--ink)" }}
+          >
+            {product.name}
+          </h3>
+          {formattedPrice && (
+            <p className="text-sm mt-1 font-medium" style={{ color: "var(--olive)" }}>
+              {formattedPrice}
+            </p>
+          )}
+        </div>
+      </Link>
+    );
+  }
 
   if (compact) {
     return (

@@ -4,7 +4,7 @@ import { ToastProvider } from "./context/ToastContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ChatBot from "./components/ChatBot";
+// import ChatBot from "./components/ChatBot"; // CHATBOT DISABLED
 import ScrollToTop from "./components/ScrollToTop";
 import ToastViewport from "./components/ToastViewport";
 
@@ -36,7 +36,7 @@ function PublicLayout() {
         <Route path="/dealers" element={<DealerLocator />} />
       </Routes>
       <Footer />
-      <ChatBot />
+      {/* <ChatBot /> */}{/* CHATBOT DISABLED */}
     </>
   );
 }
