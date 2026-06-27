@@ -25,17 +25,31 @@ const __dirname = dirname(__filename);
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://makewin.in",
+  "https://www.makewin.in"
+];
+
+const getAllowedOrigin = (origin) => {
+  if (!origin) return null;
+  return allowedOrigins.includes(origin) ? origin : null;
+};
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://MakeWin.net",
-      "https://www.MakeWin.net",
-      "https://midnightblue-fish-476058.hostingersite.com"
-    ],
+    origin: (origin, callback) => {
+      const allowedOrigin = getAllowedOrigin(origin);
+      if (!origin || allowedOrigin) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true
+    credentials: true,
+    optionsSuccessStatus: 200
   })
 );
 
@@ -52,13 +66,9 @@ app.use(express.json({ limit: "100mb" }));
 app.use((err, req, res, next) => {
   if (err && err.code === "LIMIT_FILE_SIZE") {
     const origin = req.headers.origin;
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "https://www.makewin.in",
-      "https://makewin.in", 
-    ];
-    if (origin && allowedOrigins.includes(origin)) {
-      res.setHeader("Access-Control-Allow-Origin", origin);
+    const allowedOrigin = getAllowedOrigin(origin);
+    if (allowedOrigin) {
+      res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
       res.setHeader("Access-Control-Allow-Credentials", "true");
     }
     return res.status(413).json({
@@ -159,15 +169,10 @@ app.use((err, req, res, next) => {
 
   // Ensure CORS headers are set even on errors
   const origin = req.headers.origin;
-  const allowedOrigins = [
-    "http://localhost:5173",
-    "https://MakeWin.net",
-    "https://www.MakeWin.net",
-    "https://midnightblue-fish-476058.hostingersite.com"
-  ];
+  const allowedOrigin = getAllowedOrigin(origin);
 
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
+  if (allowedOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
     res.setHeader("Access-Control-Allow-Credentials", "true");
   }
 
