@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import Navbar from "./components/Navbar";
@@ -19,10 +19,18 @@ import AdminDashboard from "./pages/AdminDashboard";
 import DownloadCenter from "./pages/DownloadCenter";
 import DealerLocator from "./pages/DealerLocator";
 
+// Pages with full-screen hero images — navbar overlays them, no spacer needed
+const HERO_ROUTES = new Set(["/", "/shop", "/about"]);
+
 function PublicLayout() {
+  const location = useLocation();
+  const needsSpacer = !HERO_ROUTES.has(location.pathname);
+
   return (
     <>
       <Navbar />
+      {/* Spacer for fixed navbar on non-hero pages */}
+      {needsSpacer && <div style={{ height: "4.5rem" }} />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Home />} />
