@@ -54,9 +54,8 @@ app.use((err, req, res, next) => {
     const origin = req.headers.origin;
     const allowedOrigins = [
       "http://localhost:5173",
-      "https://MakeWin.net",
-      "https://www.MakeWin.net",
-      "https://midnightblue-fish-476058.hostingersite.com"
+      "https://www.makewin.in",
+      "https://makewin.in", 
     ];
     if (origin && allowedOrigins.includes(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin);
