@@ -12,6 +12,7 @@ import reelRoutes from "./routes/reels.js";
 import bannerRoutes from "./routes/banners.js";
 import dealerRoutes from "./routes/dealers.js";
 import recommendationRoutes from "./routes/recommendations.js";
+import downloadRoutes from "./routes/downloads.js";
 import generateDescriptionRoutes from "./routes/generate-description.js";
 // import chatRoutes from "./routes/chat.js"; // CHATBOT DISABLED
 import instagramRoutes from "./routes/instagram.js";
@@ -142,6 +143,7 @@ app.use("/reels", reelRoutes);
 app.use("/banners", bannerRoutes);
 app.use("/dealers", dealerRoutes);
 app.use("/recommendations", recommendationRoutes);
+app.use("/downloads", downloadRoutes);
 app.use("/generate-description", generateDescriptionRoutes);
 // app.use("/chat", chatRoutes); // CHATBOT DISABLED
 app.use("/instagram", instagramRoutes);

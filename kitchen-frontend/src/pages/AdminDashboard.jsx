@@ -16,6 +16,8 @@ import AdminSearchBar from "../components/admin/AdminSearchBar";
 import AdminSearchResults from "../components/admin/AdminSearchResults";
 import DealerForm from "../components/admin/DealerForm";
 import DealerList from "../components/admin/DealerList";
+import DownloadForm from "../components/admin/DownloadForm";
+import DownloadList from "../components/admin/DownloadList";
 
 export default function AdminDashboard() {
   const { logout, user } = useAuth();
@@ -28,12 +30,14 @@ export default function AdminDashboard() {
   const [reels, setReels] = useState([]);
   const [banners, setBanners] = useState([]);
   const [dealers, setDealers] = useState([]);
+  const [downloads, setDownloads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingReel, setEditingReel] = useState(null);
   const [editingBanner, setEditingBanner] = useState(null);
   const [editingDealer, setEditingDealer] = useState(null);
+  const [editingDownload, setEditingDownload] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState(null);
 
@@ -76,6 +80,9 @@ export default function AdminDashboard() {
       } else if (activeTab === "dealers") {
         const res = await axios.get("/dealers/all");
         setDealers(res.data);
+      } else if (activeTab === "downloads") {
+        const res = await axios.get("/downloads/all");
+        setDownloads(res.data);
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -148,6 +155,7 @@ export default function AdminDashboard() {
     { id: "banners", label: "Banners", icon: null },
     { id: "reels", label: "Reels", icon: null },
     { id: "dealers", label: "Dealers", icon: null },
+    { id: "downloads", label: "Downloads", icon: null },
     { id: "messages", label: "Messages", icon: null },
   ];
 
@@ -176,6 +184,7 @@ export default function AdminDashboard() {
                 setEditingReel(null);
                 setEditingBanner(null);
                 setEditingDealer(null);
+                setEditingDownload(null);
               }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-left ${activeTab === tab.id
                 ? "bg-olive text-white shadow-md"
@@ -289,6 +298,7 @@ export default function AdminDashboard() {
                       setEditingReel(null);
                       setEditingBanner(null);
                       setEditingDealer(null);
+                      setEditingDownload(null);
                     }}
                     className={`shrink-0 px-4 py-2.5 rounded-full font-semibold transition-all ${activeTab === tab.id
                       ? "bg-olive text-white shadow-md"
@@ -387,6 +397,24 @@ export default function AdminDashboard() {
                   <DealerList
                     dealers={dealers}
                     onEdit={setEditingDealer}
+                    onDelete={loadData}
+                  />
+                </div>
+              )}
+
+              {activeTab === "downloads" && (
+                <div>
+                  <DownloadForm
+                    download={editingDownload}
+                    onSave={() => {
+                      setEditingDownload(null);
+                      loadData();
+                    }}
+                    onCancel={() => setEditingDownload(null)}
+                  />
+                  <DownloadList
+                    downloads={downloads}
+                    onEdit={setEditingDownload}
                     onDelete={loadData}
                   />
                 </div>

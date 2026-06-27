@@ -120,47 +120,20 @@ model Dealer {
   @@index([city])
 }
 
-model DownloadAsset {
-  id        Int      @id @default(autoincrement())
-  name      String
-  type      String            // "PHOTO" | "VIDEO"
-  category  String   @default("Product")
-  fileUrl   String   @db.Text
-  format    String
-  size      String
-  sizeBytes BigInt
-  downloads Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Download {
+  id          Int      @id @default(autoincrement())
+  title       String
+  category    String   // "photos", "specs", "catalogues"
+  subcategory String?  // e.g. "product", "brand", "textures" or "Edition 2026"
+  fileType    String   // "PDF", "DOC", "ZIP", "MP4", "Photo", "Video"
+  fileSize    String   // e.g. "18.4 MB"
+  fileUrl     String   @db.Text
+  coverUrl    String?  @db.Text
+  pages       Int?     // page count (for documents/catalogues)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category, order])
 }
 
-model DownloadCatalogue {
-  id           Int      @id @default(autoincrement())
-  title        String
-  edition      String   @default("EDITION 2026")
-  category     String   @default("All Products")
-  pdfUrl       String   @db.Text
-  thumbnailUrl String?  @db.Text
-  originalName String?
-  size         String
-  sizeBytes    BigInt
-  pages        Int      @default(0)
-  downloads    Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}
-
-model DownloadDoc {
-  id           Int      @id @default(autoincrement())
-  title        String
-  updatedLabel String   @default("")
-  pages        Int      @default(0)
-  pdfUrl       String   @db.Text
-  originalName String?
-  format       String   @default("PDF")
-  size         String
-  sizeBytes    BigInt
-  downloads    Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-}

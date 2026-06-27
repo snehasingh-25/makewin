@@ -48,7 +48,12 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = file.originalname.split(".").pop();
-    const prefix = file.mimetype.startsWith("video/") ? "video" : "image";
+    let prefix = "file";
+    if (file.mimetype.startsWith("video/")) {
+      prefix = "video";
+    } else if (file.mimetype.startsWith("image/")) {
+      prefix = "image";
+    }
     cb(null, `${prefix}-${uniqueSuffix}.${ext}`);
   },
 });
@@ -166,3 +171,58 @@ export const getVideoUrl = async (file) => {
   }
   return `/uploads/${file.filename}`;
 };
+
+// Combined upload for Download assets (PDF, DOC, ZIP, MP4) + optional Cover Image (JPG, PNG, WEBP)
+export const uploadDownloadFiles = multer({
+  storage: storage,
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB per file
+  },
+  fileFilter: (req, file, cb) => {
+    // We can allow all standard files for downloads
+    const allowedMimeTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/zip",
+      "application/x-zip-compressed",
+      "video/mp4",
+      "image/jpeg",
+      "image/png",
+      "image/webp"
+    ];
+    if (allowedMimeTypes.includes(file.mimetype) || file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) {
+      cb(null, true);
+    } else {
+      cb(new Error(`File type ${file.mimetype} is not allowed. Please upload PDF, DOC, DOCX, ZIP, MP4, or images.`), false);
+    }
+  },
+}).fields([
+  { name: "file", maxCount: 1 },
+  { name: "coverImage", maxCount: 1 }
+]);
+
+// Helper function to upload any asset (PDF, ZIP, DOC, MP4) to Cloudinary or return local path
+export const getDownloadFileUrl = async (file) => {
+  if (cloudinaryConfig) {
+    try {
+      let resourceType = "raw"; // raw for PDF, ZIP, DOC
+      if (file.mimetype.startsWith("image/")) {
+        resourceType = "image";
+      } else if (file.mimetype.startsWith("video/")) {
+        resourceType = "video";
+      }
+      const result = await cloudinary.uploader.upload(file.path, {
+        folder: "ecommerce",
+        resource_type: resourceType,
+      });
+      fs.unlinkSync(file.path);
+      return result.secure_url;
+    } catch (error) {
+      console.error("Cloudinary download file upload error:", error);
+      // Fall through to local
+    }
+  }
+  return `/uploads/${file.filename}`;
+};
+
