@@ -562,7 +562,7 @@ export default function ProductDetail() {
                 onClick={() => {
                   const msg = `Hi! I'm interested in: ${product.name} (${window.location.href})`;
                   window.open(
-                    `https://wa.me/917976948872?text=${encodeURIComponent(msg)}`
+                    `https://wa.me/919166166190?text=${encodeURIComponent(msg)}`
                   );
                 }}
                 className="w-full py-3.5 rounded-2xl font-semibold text-sm tracking-wide transition-all duration-200 hover:opacity-90 hover:scale-[1.01] active:scale-[0.99]"
