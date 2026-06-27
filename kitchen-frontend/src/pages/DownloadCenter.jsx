@@ -46,7 +46,7 @@ export default function DownloadCenter() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPos = window.scrollY + 250;
-      
+
       const photosOffset = sectionRefs.photos.current?.offsetTop || 0;
       const specsOffset = sectionRefs.specs.current?.offsetTop || 0;
       const cataloguesOffset = sectionRefs.catalogues.current?.offsetTop || 0;
@@ -61,8 +61,9 @@ export default function DownloadCenter() {
     };
 
     window.addEventListener("scroll", handleScroll);
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [sectionRefs.catalogues, sectionRefs.photos, sectionRefs.specs]);
 
   const scrollToSection = (id) => {
     const ref = sectionRefs[id];
@@ -138,18 +139,54 @@ export default function DownloadCenter() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FDFBF7] py-24 flex items-center justify-center">
+      <div className="min-h-screen bg-cream py-24 flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C25E4A]" />
-          <p className="font-heading text-lg font-light tracking-wide text-[#5C5C56]">Loading archive index...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-olive" />
+          <p className="font-display text-lg font-light tracking-wide text-muted-foreground">Loading archive index...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <main data-testid="download-center-page" className="min-h-screen bg-[#FDFBF7] text-[#1A1B18]">
-      {/* Accessibility notifications live section */}
+    <>
+      <style>{`
+        .download-page {
+          background-color: var(--cream);
+          color: var(--ink);
+          font-family: var(--font-sans);
+        }
+        .download-page h1,
+        .download-page h2,
+        .download-page h3,
+        .download-page h4,
+        .download-page h5,
+        .download-page .font-heading,
+        .download-page .font-display {
+          font-family: var(--font-display);
+        }
+        .download-page .font-body,
+        .download-page .font-sans {
+          font-family: var(--font-sans);
+        }
+        .download-page .bg-[#FDFBF7] {
+          background-color: var(--cream) !important;
+        }
+        .download-page .text-[#1A1B18] {
+          color: var(--ink) !important;
+        }
+        .download-page .text-[#5C5C56] {
+          color: var(--muted-foreground) !important;
+        }
+        .download-page .text-[#C25E4A] {
+          color: var(--olive) !important;
+        }
+        .download-page .bg-[#C25E4A] {
+          background-color: var(--olive) !important;
+        }
+      `}</style>
+      <main data-testid="download-center-page" className="download-page min-h-screen bg-cream text-ink">
+        {/* Accessibility notifications live section */}
       <section aria-label="Notifications alt+T" tabIndex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false" />
 
       {/* Hero Section */}
@@ -749,6 +786,7 @@ export default function DownloadCenter() {
           </div>
         </div>
       )}
-    </main>
+      </main>
+    </>
   );
 }

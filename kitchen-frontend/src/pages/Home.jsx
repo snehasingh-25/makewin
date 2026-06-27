@@ -47,6 +47,7 @@ function FadeUp({ children, delay = 0, className = "", threshold = 0.12 }) {
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [reels, setReels] = useState([]);
   const [primaryBanners, setPrimaryBanners] = useState([]);
   const [secondaryBanners, setSecondaryBanners] = useState([]);
@@ -75,6 +76,12 @@ export default function Home() {
       .catch(() => {
         setLoading((prev) => ({ ...prev, products: false }));
       });
+
+    axios.get("/categories", { signal: ac.signal })
+      .then((res) => {
+        setCategories(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch(() => { });
 
     axios.get("/reels", { signal: ac.signal })
       .then((res) => {
@@ -116,9 +123,23 @@ export default function Home() {
   );
 
   const featuredProducts = useMemo(
-    () => (Array.isArray(visibleProducts) ? visibleProducts.slice(0, 8) : []),
+    () => (Array.isArray(visibleProducts) ? visibleProducts.filter((product) => Boolean(product.isFeatured)).slice(0, 8) : []),
     [visibleProducts]
   );
+
+  const categoryCountMap = useMemo(() => {
+    const map = {};
+    (Array.isArray(products) ? products : []).forEach((product) => {
+      const cats = Array.isArray(product.categories) ? product.categories : [];
+      cats.forEach((cat) => {
+        const slug = cat.slug || cat.category?.slug;
+        if (slug) {
+          map[slug] = (map[slug] || 0) + 1;
+        }
+      });
+    });
+    return map;
+  }, [products]);
 
   const isInitialLoad = loading.products || loading.reels || loading.banners;
 
@@ -198,6 +219,10 @@ export default function Home() {
         </div>
       </section>
 
+      {!isInitialLoad && (
+        <HeroPromoCarousel banners={primaryBanners} />
+      )}
+
       {/* ══════════════════════════════════════════════════════════
           S3 — WHAT WE DO
           3 tall portrait cards. Name-only overlays. Hover reveal.
@@ -264,6 +289,90 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {categories.length > 0 && (
+        <section className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
+          <div className="flex items-end justify-between mb-8 sm:mb-10">
+            <div>
+              <p
+                className="text-[9px] tracking-[0.35em] uppercase mb-2"
+                style={{ color: "var(--olive)" }}
+              >
+                Browse by Category
+              </p>
+              <h2
+                className="font-display leading-tight"
+                style={{ fontSize: "clamp(1.8rem, 3.8vw, 2.8rem)", color: "var(--ink)" }}
+              >
+                Find the Perfect Fit
+              </h2>
+            </div>
+            <Link
+              to="/categories"
+              className="hidden sm:flex items-center gap-2 text-[10px] tracking-[0.18em] uppercase pb-0.5 border-b transition-opacity hover:opacity-70"
+              style={{ color: "var(--olive)", borderColor: "var(--olive)" }}
+            >
+              View All Categories <span>→</span>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+            {categories.slice(0, 5).map((cat) => {
+              const count = categoryCountMap[cat.slug] || 0;
+              return (
+                <Link
+                  key={cat.id ?? cat.slug}
+                  to={`/category/${cat.slug}`}
+                  className="group relative overflow-hidden rounded-lg block"
+                  style={{ aspectRatio: "3 / 4" }}
+                >
+                  {cat.imageUrl ? (
+                    <img
+                      src={cat.imageUrl}
+                      alt={cat.name}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div
+                      className="absolute inset-0"
+                      style={{ backgroundColor: "var(--tan)" }}
+                    />
+                  )}
+
+                  <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/15 to-transparent" />
+
+                  <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
+                    <div className="min-w-0 flex-1 pr-2">
+                      <p className="text-white font-display text-lg sm:text-xl leading-tight truncate">
+                        {cat.name}
+                      </p>
+                      {count > 0 && (
+                        <p className="text-white/65 text-[10px] tracking-wider mt-0.5">
+                          {count} Design{count !== 1 ? "s" : ""}
+                        </p>
+                      )}
+                    </div>
+                    <div
+                      className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5"
+                      style={{ backgroundColor: "white", color: "var(--ink)" }}
+                    >
+                      <span className="text-xs font-semibold leading-none">→</span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          <Link
+            to="/categories"
+            className="sm:hidden flex items-center justify-center gap-2 text-[10px] tracking-[0.18em] uppercase mt-6 py-2 border-b self-center w-max mx-auto"
+            style={{ color: "var(--olive)", borderColor: "var(--olive)" }}
+          >
+            View All Categories →
+          </Link>
+        </section>
+      )}
 
       <div className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
         <div className="flex items-end justify-between mb-8 sm:mb-10">

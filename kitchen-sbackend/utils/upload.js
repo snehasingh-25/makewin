@@ -133,6 +133,9 @@ export const uploadToCloudinary = async (filePath) => {
   try {
     const result = await cloudinary.uploader.upload(filePath, {
       folder: "ecommerce",
+      resource_type: "image",
+      format: "webp",
+      quality: "auto",
     });
     // Delete local file after upload
     fs.unlinkSync(filePath);
@@ -212,10 +215,18 @@ export const getDownloadFileUrl = async (file) => {
       } else if (file.mimetype.startsWith("video/")) {
         resourceType = "video";
       }
-      const result = await cloudinary.uploader.upload(file.path, {
+
+      const uploadOptions = {
         folder: "ecommerce",
         resource_type: resourceType,
-      });
+      };
+
+      if (resourceType === "image") {
+        uploadOptions.format = "webp";
+        uploadOptions.quality = "auto";
+      }
+
+      const result = await cloudinary.uploader.upload(file.path, uploadOptions);
       fs.unlinkSync(file.path);
       return result.secure_url;
     } catch (error) {

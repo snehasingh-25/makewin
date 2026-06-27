@@ -240,18 +240,11 @@ export default function CategoriesPage() {
                 Find the Perfect Fit
               </h2>
             </div>
-            <Link
-              to="/categories"
-              className="hidden sm:flex items-center gap-2 text-[10px] tracking-[0.18em] uppercase pb-0.5 border-b shrink-0 ml-6 transition-opacity hover:opacity-70"
-              style={{ color: "var(--olive)", borderColor: "var(--olive)" }}
-            >
-              View All Categories <span>→</span>
-            </Link>
           </div>
 
           {/* 5-column cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-            {categories.slice(0, 5).map((cat) => {
+            {categories.map((cat) => {
               const count = categoryCountMap[cat.slug] || 0;
               return (
                 <Link

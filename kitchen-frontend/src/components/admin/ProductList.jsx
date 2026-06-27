@@ -93,8 +93,8 @@ export default function ProductList({ products, onEdit, onDelete }) {
         <div className="flex-shrink-0 flex gap-2 flex-wrap">
           <button
             onClick={() => onEdit(product)}
-            className="px-3 py-1.5 rounded-lg text-sm font-semibold transition"
-            style={{ backgroundColor: 'var(--primary)', color: 'var(--olive)' }}
+            className="px-3 py-1.5 rounded-lg text-sm font-semibold transition text-white"
+            style={{ backgroundColor: 'var(--primary)' }}
             onMouseEnter={(e) => !isDragging && (e.target.style.backgroundColor = 'oklch(88% .06 340)')}
             onMouseLeave={(e) => (e.target.style.backgroundColor = 'var(--primary)')}
           >

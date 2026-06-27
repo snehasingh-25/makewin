@@ -140,10 +140,9 @@ export default function Search() {
             {categoryFilter && (
               <button
                 onClick={clearFilters}
-                className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300"
+                className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 text-white"
                 style={{
-                  backgroundColor: 'var(--primary)',
-                  color: 'var(--olive)'
+                  backgroundColor: 'var(--primary)'
                 }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = 'oklch(88% .06 340)'}
                 onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--primary)'}
