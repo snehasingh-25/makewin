@@ -30,7 +30,7 @@ function PublicLayout() {
     <>
       <Navbar />
       {/* Spacer for fixed navbar on non-hero pages */}
-      {needsSpacer && <div style={{ height: "4.5rem" }} />}
+      {needsSpacer && <div style={{ height: "4.75rem" }} />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Home />} />

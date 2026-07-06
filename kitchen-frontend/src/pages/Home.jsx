@@ -1,9 +1,10 @@
 import { useEffect, useRef, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "../api";
-import HeroPromoCarousel from "../components/HeroPromoCarousel";
+// import HeroPromoCarousel from "../components/HeroPromoCarousel"; // BANNERS DISABLED
 import { MemoReelCarousel as ReelCarousel } from "../components/ReelCarousel";
 import ProductCard from "../components/ProductCard";
+import HorizontalProductCarousel from "../components/HorizontalProductCarousel";
 import { shuffleArray } from "../utils/shuffle";
 
 // ─── Intersection-observer fade-up hook ──────────────────────────────────────
@@ -45,23 +46,30 @@ function FadeUp({ children, delay = 0, className = "", threshold = 0.12 }) {
 }
 
 export default function Home() {
+  const heroVideoRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [reels, setReels] = useState([]);
-  const [primaryBanners, setPrimaryBanners] = useState([]);
-  const [secondaryBanners, setSecondaryBanners] = useState([]);
+  // const [primaryBanners, setPrimaryBanners] = useState([]); // BANNERS DISABLED
+  // const [secondaryBanners, setSecondaryBanners] = useState([]); // BANNERS DISABLED
   const [visibleProductsCount, setVisibleProductsCount] = useState(10);
   const [loading, setLoading] = useState({
     products: true,
     reels: true,
-    banners: true,
+    // banners: true, // BANNERS DISABLED
   });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const video = heroVideoRef.current;
+    if (!video) return;
+    video.play().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -92,20 +100,22 @@ export default function Home() {
         setLoading((prev) => ({ ...prev, reels: false }));
       });
 
-    axios.get("/banners?type=primary", { signal: ac.signal })
-      .then((res) => {
-        setPrimaryBanners(Array.isArray(res.data) ? res.data : []);
-        setLoading((prev) => ({ ...prev, banners: false }));
-      })
-      .catch(() => {
-        setLoading((prev) => ({ ...prev, banners: false }));
-      });
+    // BANNERS DISABLED
+    // axios.get("/banners?type=primary", { signal: ac.signal })
+    //   .then((res) => {
+    //     setPrimaryBanners(Array.isArray(res.data) ? res.data : []);
+    //     setLoading((prev) => ({ ...prev, banners: false }));
+    //   })
+    //   .catch(() => {
+    //     setLoading((prev) => ({ ...prev, banners: false }));
+    //   });
 
-    axios.get("/banners?type=secondary", { signal: ac.signal })
-      .then((res) => {
-        setSecondaryBanners(Array.isArray(res.data) ? res.data : []);
-      })
-      .catch(() => { });
+    // Banners are currently disabled on the home page.
+    // axios.get("/banners?type=secondary", { signal: ac.signal })
+    //   .then((res) => {
+    //     setSecondaryBanners(Array.isArray(res.data) ? res.data : []);
+    //   })
+    //   .catch(() => {});
 
     return () => ac.abort();
   }, []);
@@ -141,7 +151,7 @@ export default function Home() {
     return map;
   }, [products]);
 
-  const isInitialLoad = loading.products || loading.reels || loading.banners;
+  const isInitialLoad = loading.products || loading.reels; // || loading.banners — BANNERS DISABLED
 
   return (
     <div className="bg-cream overflow-x-hidden">
@@ -168,19 +178,25 @@ export default function Home() {
           Full-viewport dark section. Content anchored to bottom-left.
       ══════════════════════════════════════════════════════════ */}
       <section
-        className="relative w-full min-h-screen flex flex-col justify-end"
+        className="relative w-full h-[89.1svh] flex flex-col justify-end overflow-hidden"
         style={{ backgroundColor: "var(--ink)" }}
       >
         <div className="absolute inset-0 overflow-hidden">
-          <img
-            src="/home-hero.png"
-            alt="MakeWin Kitchen"
-            className="w-full h-full object-cover"
+          <video
+            ref={heroVideoRef}
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            src="/home-hero.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden="true"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
         </div>
 
-        <div className="relative z-10 px-8 sm:px-14 lg:px-20 pb-24 pt-48 lg:pt-56">
+        <div className="relative z-10 px-8 sm:px-14 lg:px-20 pb-10 sm:pb-12">
           <p
             className="text-[9px] tracking-[0.4em] uppercase mb-7"
             style={{ color: "rgba(255,255,255,0.4)" }}
@@ -189,8 +205,8 @@ export default function Home() {
           </p>
 
           <h1
-            className="font-display leading-[0.92] mb-7"
-            style={{ fontSize: "clamp(4rem, 13vw, 11rem)", color: "white" }}
+            className="font-display leading-[0.92] mb-5"
+            style={{ fontSize: "clamp(2.75rem, 10vw, 7rem)", color: "white" }}
           >
             Makewin<br />Kitchens
           </h1>
@@ -204,7 +220,7 @@ export default function Home() {
         </div>
 
         <div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5 chevron-bounce pointer-events-none"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5 chevron-bounce pointer-events-none"
           style={{ opacity: scrolled ? 0 : 1, transition: "opacity 0.5s ease" }}
         >
           <span
@@ -219,15 +235,11 @@ export default function Home() {
         </div>
       </section>
 
-      {!isInitialLoad && (
-        <HeroPromoCarousel banners={primaryBanners} />
-      )}
-
       {/* ══════════════════════════════════════════════════════════
           S3 — WHAT WE DO
           3 tall portrait cards. Name-only overlays. Hover reveal.
       ══════════════════════════════════════════════════════════ */}
-      <section className="m-10 bg-cream px-8 sm:px-14 lg:px-20">
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-28 sm:pt-36 lg:pt-44 pb-28 sm:pb-36 lg:pb-44">
         <FadeUp>
           <p
             className="text-[9px] tracking-[0.35em] uppercase mb-10 lg:mb-14"
@@ -291,7 +303,7 @@ export default function Home() {
       </section>
 
       {categories.length > 0 && (
-        <section className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
+        <section className="bg-cream px-8 sm:px-14 lg:px-20 py-28 sm:py-36 lg:py-44">
           <div className="flex items-end justify-between mb-8 sm:mb-10">
             <div>
               <p
@@ -374,6 +386,102 @@ export default function Home() {
         </section>
       )}
 
+      {/* ══════════════════════════════════════════════════════════
+          EDITORIAL — Stories of life (two-column)
+      ══════════════════════════════════════════════════════════ */}
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 py-28 sm:py-36 lg:py-44">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 xl:gap-32 items-center max-w-7xl mx-auto">
+          <FadeUp>
+            <div className="max-w-md">
+              <p
+                className="font-script text-3xl sm:text-4xl mb-3"
+                style={{ color: "var(--olive)" }}
+              >
+                #craftedforlife
+              </p>
+              <h2
+                className="font-display text-2xl sm:text-3xl mb-8"
+                style={{ color: "var(--olive)" }}
+              >
+                Makewin Kitchens
+              </h2>
+              <p
+                className="text-sm sm:text-base leading-[1.85]"
+                style={{ color: "oklch(38% .02 80)" }}
+              >
+                The kitchen is a place of real life — where mornings begin, meals
+                are shared, and memories are made. It is the heart of the home,
+                built for conviviality, warmth, and togetherness. At Makewin, we
+                believe every kitchen tells a story. Share yours with us, and
+                let us craft a space that reflects the way you truly live.
+              </p>
+            </div>
+          </FadeUp>
+
+          <FadeUp delay={120}>
+            <div className="relative w-full overflow-hidden aspect-[4/3] lg:aspect-[5/4]">
+              <img
+                src="/contact-kitchen.png"
+                alt="Makewin kitchen — lived-in space"
+                className="absolute inset-0 w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </FadeUp>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          S4 — FACTORY
+          Two columns: image left, text + 3 trust indicators right.
+      ══════════════════════════════════════════════════════════ */}
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 pb-28 sm:pb-36 lg:pb-44">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          <FadeUp className="w-full">
+            <div className="w-full">
+              <div className="relative w-full overflow-hidden aspect-[4/3]">
+                <img
+                  src="/about-factory.png"
+                  alt="MakeWin Factory"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-[1.03]"
+                />
+              </div>
+              <p
+                className="text-[9px] tracking-[0.3em] uppercase mt-4"
+                style={{ color: "oklch(55% .015 80)" }}
+              >
+                Bhilwara, Rajasthan
+              </p>
+            </div>
+          </FadeUp>
+
+          <FadeUp delay={120} className="w-full">
+            <div>
+              <p
+                className="text-[9px] tracking-[0.35em] uppercase mb-2"
+                style={{ color: "var(--olive)" }}
+              >
+                Made with Precision
+              </p>
+              <h2
+                className="font-display leading-tight"
+                style={{ fontSize: "clamp(1.8rem, 3.8vw, 2.8rem)", color: "var(--ink)" }}
+              >
+                Crafted in our own factory
+              </h2>
+              <p
+                className="mt-6 text-sm sm:text-base leading-[1.85]"
+                style={{ color: "oklch(38% .02 80)" }}
+              >
+                Every detail is shaped with care, from material selection to final finishing.
+                Our production process combines precision engineering, durable materials,
+                and attentive craftsmanship to deliver spaces that stand the test of time.
+              </p>
+            </div>
+          </FadeUp>
+        </div>
+      </section>
+
       <div className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
         <div className="flex items-end justify-between mb-8 sm:mb-10">
           <div>
@@ -416,26 +524,23 @@ export default function Home() {
           S5 — EXPERIENCE CENTRE
           Dark. Large cinematic image. Minimal copy. Strong CTA.
       ══════════════════════════════════════════════════════════ */}
-      <section
-        className="px-8 sm:px-14 lg:px-20 pt-24 sm:pt-32 lg:pt-40 pb-16 sm:pb-20"
-        style={{ backgroundColor: "var(--ink)" }}
-      >
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-24 sm:pt-32 lg:pt-40 pb-16 sm:pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-end mb-14 lg:mb-18">
 
           <FadeUp>
             <div>
               <p
                 className="text-[9px] tracking-[0.35em] uppercase mb-8"
-                style={{ color: "rgba(255,255,255,0.3)" }}
+                style={{ color: "var(--olive)" }}
               >
                 Experience Centre
               </p>
               <h2
-                className="font-display text-white leading-[1.0]"
-                style={{ fontSize: "clamp(2.4rem, 6vw, 7rem)" }}
+                className="font-display leading-[1.0]"
+                style={{ fontSize: "clamp(2.4rem, 6vw, 7rem)", color: "var(--ink)" }}
               >
                 See it. Feel it.<br />
-                <em style={{ color: "var(--tan)" }}>Live in it.</em>
+                <em style={{ color: "var(--olive)" }}>Live in it.</em>
               </h2>
             </div>
           </FadeUp>
@@ -444,7 +549,7 @@ export default function Home() {
             <div className="lg:pb-3">
               <p
                 className="text-sm sm:text-base leading-relaxed mb-10 max-w-sm"
-                style={{ color: "rgba(255,255,255,0.5)" }}
+                style={{ color: "oklch(45% .015 80)" }}
               >
                 Our studio in Bhilwara is open seven days a week. Touch the
                 finishes, open the cabinets, see the craftsmanship up close.
@@ -453,14 +558,14 @@ export default function Home() {
               <Link
                 to="/contact"
                 className="inline-flex items-center gap-3 px-8 py-3.5 text-[9px] tracking-[0.28em] uppercase border transition-colors duration-300"
-                style={{ borderColor: "rgba(255,255,255,0.45)", color: "white" }}
+                style={{ borderColor: "var(--olive)", color: "var(--olive)" }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "white";
-                  e.currentTarget.style.color = "var(--ink)";
+                  e.currentTarget.style.backgroundColor = "var(--olive)";
+                  e.currentTarget.style.color = "white";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = "transparent";
-                  e.currentTarget.style.color = "white";
+                  e.currentTarget.style.color = "var(--olive)";
                 }}
               >
                 Book a Visit →
@@ -481,7 +586,47 @@ export default function Home() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          S6 — PRODUCTS & BANNERS (kept from original Home)
+          MAGAZINE — centred feature
+      ══════════════════════════════════════════════════════════ */}
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 py-28 sm:py-36 lg:py-44">
+        <FadeUp>
+          <h2
+            className="text-center font-sans font-bold uppercase tracking-[0.35em] mb-12 sm:mb-16"
+            style={{
+              fontSize: "clamp(2rem, 5vw, 3.5rem)",
+              color: "var(--ink)",
+            }}
+          >
+            Inspiration
+          </h2>
+        </FadeUp>
+
+        <FadeUp delay={80}>
+          <div className="max-w-5xl mx-auto w-full overflow-hidden aspect-[16/10] sm:aspect-[16/9]">
+            <img
+              src="/about-kitchens.png"
+              alt="Makewin modular kitchen design"
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        </FadeUp>
+
+        <FadeUp delay={160}>
+          <p
+            className="text-center text-sm sm:text-base leading-[1.85] max-w-2xl mx-auto mt-12 sm:mt-16 px-4"
+            style={{ color: "oklch(42% .02 80)" }}
+          >
+            Learn how to design a kitchen that works as hard as you do — from
+            smart storage and ergonomic layouts to finishes that age gracefully.
+            Explore ideas for maintenance, personalisation, and creating a space
+            that feels unmistakably yours, built in aluminium and made to last.
+          </p>
+        </FadeUp>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          S6 — PRODUCTS (banners disabled)
       ══════════════════════════════════════════════════════════ */}
       <div className="bg-cream">
 
@@ -510,28 +655,75 @@ export default function Home() {
 
         {!isInitialLoad && (
           <>
-            <HeroPromoCarousel banners={primaryBanners} />
+            {/* BANNERS DISABLED */}
+            {/* <HeroPromoCarousel banners={primaryBanners} /> */}
 
-            <HeroPromoCarousel banners={secondaryBanners} />
+            <div className="px-1 sm:px-2 lg:px-4">
+              <HorizontalProductCarousel
+                title="Products"
+                products={visibleProducts}
+                isLoading={loading.products}
+                sectionClassName="mt-6 lg:mt-8"
+              />
+            </div>
+
+            {/* BANNERS DISABLED */}
+            {/* <HeroPromoCarousel banners={secondaryBanners} /> */}
           </>
         )}
       </div>
 
+      {/* ══════════════════════════════════════════════════════════
+          BRAND STATEMENT
+      ══════════════════════════════════════════════════════════ */}
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 py-28 sm:py-36 lg:py-44">
+        <FadeUp delay={0}>
+          <p
+            className="text-[9px] tracking-[0.35em] uppercase mb-10 lg:mb-14"
+            style={{ color: "var(--olive)" }}
+          >
+            Makewin Kitchens
+          </p>
+        </FadeUp>
+
+        <FadeUp delay={80}>
+          <h2
+            className="font-display leading-[1.05] mb-14 lg:mb-20"
+            style={{
+              fontSize: "clamp(2.6rem, 7vw, 7.5rem)",
+              color: "var(--ink)",
+              maxWidth: "22ch",
+            }}
+          >
+            A workshop where<br />
+            <em style={{ color: "var(--olive)" }}>aluminium meets art.</em>
+          </h2>
+        </FadeUp>
+
+        <FadeUp delay={160}>
+          <p
+            className="text-sm sm:text-base leading-relaxed max-w-md"
+            style={{ color: "oklch(45% .015 80)" }}
+          >
+            Welcome to Makewin Aluminum Kitchen Factory. From our fully automatic
+            plant in Bhilwara, Rajasthan, we design and manufacture high-quality
+            aluminum furniture — built to outlive trends and elevate every space,
+            residential or commercial.
+          </p>
+        </FadeUp>
+      </section>
+
       {/* Thin separator */}
-      <div className="h-px" style={{ backgroundColor: "oklch(0.28 0.01 80)" }} />
+      <div className="h-px" style={{ backgroundColor: "var(--border)" }} />
 
       {/* ══════════════════════════════════════════════════════════
           S7 — BOTTOM CTA
-          Dark. Very large serif heading. Single button.
       ══════════════════════════════════════════════════════════ */}
-      <section
-        className="px-8 sm:px-14 lg:px-20 py-32 sm:py-40 lg:py-52 text-center flex flex-col items-center"
-        style={{ backgroundColor: "var(--ink)" }}
-      >
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 py-32 sm:py-40 lg:py-52 text-center flex flex-col items-center">
         <FadeUp>
           <p
             className="text-[9px] tracking-[0.38em] uppercase mb-10"
-            style={{ color: "rgba(255,255,255,0.3)" }}
+            style={{ color: "var(--olive)" }}
           >
             Let&apos;s Work Together
           </p>
@@ -539,10 +731,11 @@ export default function Home() {
 
         <FadeUp delay={80}>
           <h2
-            className="font-display text-white leading-tight mb-8"
+            className="font-display leading-tight mb-8"
             style={{
               fontSize: "clamp(2.6rem, 8vw, 8rem)",
               maxWidth: "20ch",
+              color: "var(--ink)",
             }}
           >
             Let&apos;s Create Something Extraordinary.
@@ -552,7 +745,7 @@ export default function Home() {
         <FadeUp delay={160}>
           <p
             className="text-xs sm:text-sm tracking-widest uppercase mb-14"
-            style={{ color: "rgba(255,255,255,0.35)" }}
+            style={{ color: "oklch(55% .015 80)" }}
           >
             Start your journey with MakeWin Kitchens.
           </p>
@@ -562,14 +755,14 @@ export default function Home() {
           <Link
             to="/contact"
             className="inline-flex items-center gap-3 px-10 py-4 text-[9px] tracking-[0.3em] uppercase border transition-colors duration-300"
-            style={{ borderColor: "rgba(255,255,255,0.45)", color: "white" }}
+            style={{ borderColor: "var(--olive)", color: "var(--olive)" }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "white";
-              e.currentTarget.style.color = "var(--ink)";
+              e.currentTarget.style.backgroundColor = "var(--olive)";
+              e.currentTarget.style.color = "white";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = "transparent";
-              e.currentTarget.style.color = "white";
+              e.currentTarget.style.color = "var(--olive)";
             }}
           >
             Schedule a Consultation →

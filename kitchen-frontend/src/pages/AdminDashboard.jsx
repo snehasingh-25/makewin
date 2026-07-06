@@ -10,8 +10,8 @@ import CategoryList from "../components/admin/CategoryList";
 import MessageList from "../components/admin/MessageList";
 import ReelForm from "../components/admin/ReelForm";
 import ReelList from "../components/admin/ReelList";
-import BannerForm from "../components/admin/BannerForm";
-import BannerList from "../components/admin/BannerList";
+// import BannerForm from "../components/admin/BannerForm"; // BANNERS DISABLED
+// import BannerList from "../components/admin/BannerList"; // BANNERS DISABLED
 import AdminSearchBar from "../components/admin/AdminSearchBar";
 import AdminSearchResults from "../components/admin/AdminSearchResults";
 import DealerForm from "../components/admin/DealerForm";
@@ -28,14 +28,14 @@ export default function AdminDashboard() {
   const [categories, setCategories] = useState([]);
   const [messages, setMessages] = useState([]);
   const [reels, setReels] = useState([]);
-  const [banners, setBanners] = useState([]);
+  // const [banners, setBanners] = useState([]); // BANNERS DISABLED
   const [dealers, setDealers] = useState([]);
   const [downloads, setDownloads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [editingReel, setEditingReel] = useState(null);
-  const [editingBanner, setEditingBanner] = useState(null);
+  // const [editingBanner, setEditingBanner] = useState(null); // BANNERS DISABLED
   const [editingDealer, setEditingDealer] = useState(null);
   const [editingDownload, setEditingDownload] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,9 +74,10 @@ export default function AdminDashboard() {
       } else if (activeTab === "reels") {
         const res = await axios.get("/reels/all");
         setReels(res.data);
-      } else if (activeTab === "banners") {
-        const res = await axios.get("/banners/all");
-        setBanners(res.data);
+      // BANNERS DISABLED
+      // } else if (activeTab === "banners") {
+      //   const res = await axios.get("/banners/all");
+      //   setBanners(res.data);
       } else if (activeTab === "dealers") {
         const res = await axios.get("/dealers/all");
         setDealers(res.data);
@@ -139,10 +140,11 @@ export default function AdminDashboard() {
     loadData();
   };
 
-  const handleBannerSave = () => {
-    setEditingBanner(null);
-    loadData();
-  };
+  // BANNERS DISABLED
+  // const handleBannerSave = () => {
+  //   setEditingBanner(null);
+  //   loadData();
+  // };
 
   const handleDealerSave = () => {
     setEditingDealer(null);
@@ -152,7 +154,7 @@ export default function AdminDashboard() {
   const tabs = [
     { id: "products", label: "Products", icon: null },
     { id: "categories", label: "Categories", icon: null },
-    { id: "banners", label: "Banners", icon: null },
+    // { id: "banners", label: "Banners", icon: null }, // BANNERS DISABLED
     { id: "reels", label: "Reels", icon: null },
     { id: "dealers", label: "Dealers", icon: null },
     { id: "downloads", label: "Downloads", icon: null },
@@ -182,7 +184,7 @@ export default function AdminDashboard() {
                 setEditingProduct(null);
                 setEditingCategory(null);
                 setEditingReel(null);
-                setEditingBanner(null);
+                // setEditingBanner(null); // BANNERS DISABLED
                 setEditingDealer(null);
                 setEditingDownload(null);
               }}
@@ -296,7 +298,7 @@ export default function AdminDashboard() {
                       setEditingProduct(null);
                       setEditingCategory(null);
                       setEditingReel(null);
-                      setEditingBanner(null);
+                      // setEditingBanner(null); // BANNERS DISABLED
                       setEditingDealer(null);
                       setEditingDownload(null);
                     }}
@@ -372,7 +374,8 @@ export default function AdminDashboard() {
 
 
 
-              {activeTab === "banners" && (
+              {/* BANNERS DISABLED */}
+              {/* {activeTab === "banners" && (
                 <div>
                   <BannerForm
                     banner={editingBanner}
@@ -385,7 +388,7 @@ export default function AdminDashboard() {
                     onDelete={loadData}
                   />
                 </div>
-              )}
+              )} */}
 
               {activeTab === "dealers" && (
                 <div>

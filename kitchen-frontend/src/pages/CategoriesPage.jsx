@@ -59,7 +59,7 @@ export default function CategoriesPage() {
 
   const [categories, setCategories] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
-  const [heroBanner, setHeroBanner] = useState(null);
+  // const [heroBanner, setHeroBanner] = useState(null); // BANNERS DISABLED
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -81,13 +81,13 @@ export default function CategoriesPage() {
       Promise.all([
         axios.get("/categories", { signal: ac.signal }),
         axios.get("/products", { signal: ac.signal }),
-        axios.get("/banners?type=primary", { signal: ac.signal }),
+        // axios.get("/banners?type=primary", { signal: ac.signal }), // BANNERS DISABLED
       ])
-        .then(([catsRes, prodsRes, bannersRes]) => {
+        .then(([catsRes, prodsRes /* , bannersRes */]) => {
           setCategories(Array.isArray(catsRes.data) ? catsRes.data : []);
           setAllProducts(shuffleArray(Array.isArray(prodsRes.data) ? prodsRes.data : []));
-          const banners = Array.isArray(bannersRes.data) ? bannersRes.data : [];
-          setHeroBanner(banners[0] || null);
+          // const banners = Array.isArray(bannersRes.data) ? bannersRes.data : [];
+          // setHeroBanner(banners[0] || null);
           setLoading(false);
         })
         .catch((err) => {
@@ -119,9 +119,9 @@ export default function CategoriesPage() {
     [allProducts]
   );
 
-  // Hero image: banner first, then fall back to first product image
+  // Hero image: fall back to first product image (banners disabled)
   const heroImageUrl =
-    heroBanner?.imageUrl ||
+    // heroBanner?.imageUrl ||
     (() => {
       const imgs = parseImages(allProducts[0]?.images);
       return imgs[0] || null;
