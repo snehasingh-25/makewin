@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import axios from "../api";
 import ProductCard from "../components/ProductCard";
 import ProductListing from "../components/ProductListing";
@@ -56,11 +56,19 @@ function CategoryFilteredView({ slug, categories }) {
 // ─── Main catalogue page ──────────────────────────────────────────────────────
 export default function CategoriesPage() {
   const { slug } = useParams();
+  const { hash } = useLocation();
 
   const [categories, setCategories] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
   // const [heroBanner, setHeroBanner] = useState(null); // BANNERS DISABLED
   const [loading, setLoading] = useState(true);
+
+  // Scroll to #products anchor after data loads when hash is present
+  useEffect(() => {
+    if (!hash || loading) return;
+    const el = document.getElementById(hash.replace("#", ""));
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [hash, loading]);
 
   useEffect(() => {
     const ac = new AbortController();
@@ -227,17 +235,11 @@ export default function CategoriesPage() {
           {/* Header row */}
           <div className="flex items-end justify-between mb-8 sm:mb-10">
             <div>
-              <p
-                className="text-[10px] tracking-[0.25em] uppercase mb-2"
-                style={{ color: "var(--olive)" }}
-              >
-                Browse by Category
-              </p>
               <h2
                 className="font-display text-3xl sm:text-4xl lg:text-5xl"
                 style={{ color: "var(--ink)" }}
               >
-                Find the Perfect Fit
+                Category
               </h2>
             </div>
           </div>

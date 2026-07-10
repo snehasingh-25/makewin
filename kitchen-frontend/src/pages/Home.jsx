@@ -1,11 +1,8 @@
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "../api";
 // import HeroPromoCarousel from "../components/HeroPromoCarousel"; // BANNERS DISABLED
 import { MemoReelCarousel as ReelCarousel } from "../components/ReelCarousel";
-import ProductCard from "../components/ProductCard";
-import HorizontalProductCarousel from "../components/HorizontalProductCarousel";
-import { shuffleArray } from "../utils/shuffle";
 
 // ─── Intersection-observer fade-up hook ──────────────────────────────────────
 function useInView(threshold = 0.12) {
@@ -48,17 +45,8 @@ function FadeUp({ children, delay = 0, className = "", threshold = 0.12 }) {
 export default function Home() {
   const heroVideoRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [reels, setReels] = useState([]);
-  // const [primaryBanners, setPrimaryBanners] = useState([]); // BANNERS DISABLED
-  // const [secondaryBanners, setSecondaryBanners] = useState([]); // BANNERS DISABLED
-  const [visibleProductsCount, setVisibleProductsCount] = useState(10);
-  const [loading, setLoading] = useState({
-    products: true,
-    reels: true,
-    // banners: true, // BANNERS DISABLED
-  });
+  const [loading, setLoading] = useState({ reels: true });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -74,22 +62,6 @@ export default function Home() {
 
   useEffect(() => {
     const ac = new AbortController();
-
-    axios.get("/products", { signal: ac.signal })
-      .then((res) => {
-        const list = shuffleArray(Array.isArray(res.data) ? res.data : []);
-        setProducts(list);
-        setLoading((prev) => ({ ...prev, products: false }));
-      })
-      .catch(() => {
-        setLoading((prev) => ({ ...prev, products: false }));
-      });
-
-    axios.get("/categories", { signal: ac.signal })
-      .then((res) => {
-        setCategories(Array.isArray(res.data) ? res.data : []);
-      })
-      .catch(() => { });
 
     axios.get("/reels", { signal: ac.signal })
       .then((res) => {
@@ -120,38 +92,7 @@ export default function Home() {
     return () => ac.abort();
   }, []);
 
-  useEffect(() => {
-    if (!products.length) return;
-    if (visibleProductsCount >= Math.min(products.length, 25)) return;
-    const t = setTimeout(() => setVisibleProductsCount((c) => Math.min(c + 5, 25)), 600);
-    return () => clearTimeout(t);
-  }, [products.length, visibleProductsCount]);
-
-  const visibleProducts = useMemo(
-    () => (Array.isArray(products) ? products.slice(0, visibleProductsCount) : []),
-    [products, visibleProductsCount]
-  );
-
-  const featuredProducts = useMemo(
-    () => (Array.isArray(visibleProducts) ? visibleProducts.filter((product) => Boolean(product.isFeatured)).slice(0, 8) : []),
-    [visibleProducts]
-  );
-
-  const categoryCountMap = useMemo(() => {
-    const map = {};
-    (Array.isArray(products) ? products : []).forEach((product) => {
-      const cats = Array.isArray(product.categories) ? product.categories : [];
-      cats.forEach((cat) => {
-        const slug = cat.slug || cat.category?.slug;
-        if (slug) {
-          map[slug] = (map[slug] || 0) + 1;
-        }
-      });
-    });
-    return map;
-  }, [products]);
-
-  const isInitialLoad = loading.products || loading.reels; // || loading.banners — BANNERS DISABLED
+  const isInitialLoad = loading.reels;
 
   return (
     <div className="bg-cream overflow-x-hidden">
@@ -197,13 +138,6 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 px-8 sm:px-14 lg:px-20 pb-10 sm:pb-12">
-          <p
-            className="text-[9px] tracking-[0.4em] uppercase mb-7"
-            style={{ color: "rgba(255,255,255,0.4)" }}
-          >
-            Makewin Kitchens
-          </p>
-
           <h1
             className="font-display leading-[0.92] mb-5"
             style={{ fontSize: "clamp(2.75rem, 10vw, 7rem)", color: "white" }}
@@ -241,19 +175,18 @@ export default function Home() {
       ══════════════════════════════════════════════════════════ */}
       <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-28 sm:pt-36 lg:pt-44 pb-28 sm:pb-36 lg:pb-44">
         <FadeUp>
-          <p
-            className="text-[9px] tracking-[0.35em] uppercase mb-10 lg:mb-14"
-            style={{ color: "var(--olive)" }}
+          <h2
+            className="font-display mb-10 lg:mb-14"
+            style={{ fontSize: "clamp(1.6rem, 3vw, 2.4rem)", color: "var(--ink)" }}
           >
-            What We Do
-          </p>
+            Aluminium Products
+          </h2>
         </FadeUp>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
           {[
-            { label: "Modular\nKitchens", link: "/categories", img: "/about-kitchens.png", alt: "MakeWin Modular Kitchen" },
-            { label: "Wardrobes", link: "/categories", img: "/about-wardrobes.png", alt: "MakeWin Wardrobes" },
-            { label: "Interior\nSolutions", link: "/categories", img: "/about-interior.png", alt: "MakeWin Interior Solutions" },
+            { label: "Modular\nKitchens", link: "/category/kitchen", img: "/about-kitchens.png", alt: "MakeWin Modular Kitchen" },
+            { label: "Wardrobes", link: "/category/q", img: "/about-wardrobes.png", alt: "MakeWin Wardrobes" },
+            { label: "Interior\nSolutions", link: "/categories#products", img: "/about-interior.png", alt: "MakeWin Interior Solutions" },
           ].map(({ label, link, img, alt }, i) => (
             <FadeUp key={label} delay={i * 110} className="w-full">
               <Link
@@ -302,134 +235,7 @@ export default function Home() {
         </div>
       </section>
 
-      {categories.length > 0 && (
-        <section className="bg-cream px-8 sm:px-14 lg:px-20 py-28 sm:py-36 lg:py-44">
-          <div className="flex items-end justify-between mb-8 sm:mb-10">
-            <div>
-              <p
-                className="text-[9px] tracking-[0.35em] uppercase mb-2"
-                style={{ color: "var(--olive)" }}
-              >
-                Browse by Category
-              </p>
-              <h2
-                className="font-display leading-tight"
-                style={{ fontSize: "clamp(1.8rem, 3.8vw, 2.8rem)", color: "var(--ink)" }}
-              >
-                Find the Perfect Fit
-              </h2>
-            </div>
-            <Link
-              to="/categories"
-              className="hidden sm:flex items-center gap-2 text-[10px] tracking-[0.18em] uppercase pb-0.5 border-b transition-opacity hover:opacity-70"
-              style={{ color: "var(--olive)", borderColor: "var(--olive)" }}
-            >
-              View All Categories <span>→</span>
-            </Link>
-          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-            {categories.slice(0, 5).map((cat) => {
-              const count = categoryCountMap[cat.slug] || 0;
-              return (
-                <Link
-                  key={cat.id ?? cat.slug}
-                  to={`/category/${cat.slug}`}
-                  className="group relative overflow-hidden rounded-lg block"
-                  style={{ aspectRatio: "3 / 4" }}
-                >
-                  {cat.imageUrl ? (
-                    <img
-                      src={cat.imageUrl}
-                      alt={cat.name}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div
-                      className="absolute inset-0"
-                      style={{ backgroundColor: "var(--tan)" }}
-                    />
-                  )}
-
-                  <div className="absolute inset-0 bg-linear-to-t from-black/65 via-black/15 to-transparent" />
-
-                  <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
-                    <div className="min-w-0 flex-1 pr-2">
-                      <p className="text-white font-display text-lg sm:text-xl leading-tight truncate">
-                        {cat.name}
-                      </p>
-                      {count > 0 && (
-                        <p className="text-white/65 text-[10px] tracking-wider mt-0.5">
-                          {count} Design{count !== 1 ? "s" : ""}
-                        </p>
-                      )}
-                    </div>
-                    <div
-                      className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:translate-x-0.5"
-                      style={{ backgroundColor: "white", color: "var(--ink)" }}
-                    >
-                      <span className="text-xs font-semibold leading-none">→</span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          <Link
-            to="/categories"
-            className="sm:hidden flex items-center justify-center gap-2 text-[10px] tracking-[0.18em] uppercase mt-6 py-2 border-b self-center w-max mx-auto"
-            style={{ color: "var(--olive)", borderColor: "var(--olive)" }}
-          >
-            View All Categories →
-          </Link>
-        </section>
-      )}
-
-      {/* ══════════════════════════════════════════════════════════
-          EDITORIAL — Stories of life (two-column)
-      ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 py-28 sm:py-36 lg:py-44">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 xl:gap-32 items-center max-w-7xl mx-auto">
-          <FadeUp>
-            <div className="max-w-md">
-              <p
-                className="font-script text-3xl sm:text-4xl mb-3"
-                style={{ color: "var(--olive)" }}
-              >
-                #craftedforlife
-              </p>
-              <h2
-                className="font-display text-2xl sm:text-3xl mb-8"
-                style={{ color: "var(--olive)" }}
-              >
-                Makewin Kitchens
-              </h2>
-              <p
-                className="text-sm sm:text-base leading-[1.85]"
-                style={{ color: "oklch(38% .02 80)" }}
-              >
-                The kitchen is a place of real life — where mornings begin, meals
-                are shared, and memories are made. It is the heart of the home,
-                built for conviviality, warmth, and togetherness. At Makewin, we
-                believe every kitchen tells a story. Share yours with us, and
-                let us craft a space that reflects the way you truly live.
-              </p>
-            </div>
-          </FadeUp>
-
-          <FadeUp delay={120}>
-            <div className="relative w-full overflow-hidden aspect-[4/3] lg:aspect-[5/4]">
-              <img
-                src="/contact-kitchen.png"
-                alt="Makewin kitchen — lived-in space"
-                className="absolute inset-0 w-full h-full object-cover"
-                loading="lazy"
-              />
-            </div>
-          </FadeUp>
-        </div>
-      </section>
 
       {/* ══════════════════════════════════════════════════════════
           S4 — FACTORY
@@ -446,23 +252,11 @@ export default function Home() {
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-[1.03]"
                 />
               </div>
-              <p
-                className="text-[9px] tracking-[0.3em] uppercase mt-4"
-                style={{ color: "oklch(55% .015 80)" }}
-              >
-                Bhilwara, Rajasthan
-              </p>
             </div>
           </FadeUp>
 
           <FadeUp delay={120} className="w-full">
             <div>
-              <p
-                className="text-[9px] tracking-[0.35em] uppercase mb-2"
-                style={{ color: "var(--olive)" }}
-              >
-                Made with Precision
-              </p>
               <h2
                 className="font-display leading-tight"
                 style={{ fontSize: "clamp(1.8rem, 3.8vw, 2.8rem)", color: "var(--ink)" }}
@@ -482,43 +276,6 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-14">
-        <div className="flex items-end justify-between mb-8 sm:mb-10">
-          <div>
-            <p
-              className="text-[9px] tracking-[0.35em] uppercase mb-2"
-              style={{ color: "var(--olive)" }}
-            >
-              Our Collection
-            </p>
-            <h2
-              className="font-display leading-tight"
-              style={{ fontSize: "clamp(1.8rem, 3.8vw, 2.8rem)", color: "var(--ink)" }}
-            >
-              Featured Products
-            </h2>
-          </div>
-          <Link
-            to="/categories"
-            className="hidden sm:flex items-center gap-2 text-[10px] tracking-[0.18em] uppercase pb-0.5 border-b transition-opacity hover:opacity-70"
-            style={{ color: "var(--olive)", borderColor: "var(--olive)" }}
-          >
-            View All <span>→</span>
-          </Link>
-        </div>
-
-        {featuredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} catalogue />
-            ))}
-          </div>
-        ) : (
-          <div className="text-sm" style={{ color: "oklch(45% .015 80)" }}>
-            No featured products available right now.
-          </div>
-        )}
-      </div>
 
       {/* ══════════════════════════════════════════════════════════
           S5 — EXPERIENCE CENTRE
@@ -529,12 +286,6 @@ export default function Home() {
 
           <FadeUp>
             <div>
-              <p
-                className="text-[9px] tracking-[0.35em] uppercase mb-8"
-                style={{ color: "var(--olive)" }}
-              >
-                Experience Centre
-              </p>
               <h2
                 className="font-display leading-[1.0]"
                 style={{ fontSize: "clamp(2.4rem, 6vw, 7rem)", color: "var(--ink)" }}
@@ -625,110 +376,11 @@ export default function Home() {
         </FadeUp>
       </section>
 
-      {/* ══════════════════════════════════════════════════════════
-          S6 — PRODUCTS (banners disabled)
-      ══════════════════════════════════════════════════════════ */}
-      <div className="bg-cream">
-
-        {/* Skeleton — shown while data is loading */}
-        {isInitialLoad && (
-          <div className="px-1 sm:px-2 lg:px-4 py-10">
-            <div className="pb-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="hm-sk h-6 w-44 rounded" />
-                <div className="hm-sk h-4 w-16 rounded" />
-              </div>
-              <div className="flex gap-3 overflow-hidden">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="shrink-0 basis-[calc((100%-0.5rem)/2)] lg:basis-[calc((100%-2rem)/5)]">
-                    <div className="hm-sk aspect-[4/5] w-full" />
-                    <div className="mt-2 space-y-2 px-1">
-                      <div className="hm-sk h-3 w-3/4 rounded" />
-                      <div className="hm-sk h-3 w-1/3 rounded" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {!isInitialLoad && (
-          <>
-            {/* BANNERS DISABLED */}
-            {/* <HeroPromoCarousel banners={primaryBanners} /> */}
-
-            <div className="px-1 sm:px-2 lg:px-4">
-              <HorizontalProductCarousel
-                title="Products"
-                products={visibleProducts}
-                isLoading={loading.products}
-                sectionClassName="mt-6 lg:mt-8"
-              />
-            </div>
-
-            {/* BANNERS DISABLED */}
-            {/* <HeroPromoCarousel banners={secondaryBanners} /> */}
-          </>
-        )}
-      </div>
-
-      {/* ══════════════════════════════════════════════════════════
-          BRAND STATEMENT
-      ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 py-28 sm:py-36 lg:py-44">
-        <FadeUp delay={0}>
-          <p
-            className="text-[9px] tracking-[0.35em] uppercase mb-10 lg:mb-14"
-            style={{ color: "var(--olive)" }}
-          >
-            Makewin Kitchens
-          </p>
-        </FadeUp>
-
-        <FadeUp delay={80}>
-          <h2
-            className="font-display leading-[1.05] mb-14 lg:mb-20"
-            style={{
-              fontSize: "clamp(2.6rem, 7vw, 7.5rem)",
-              color: "var(--ink)",
-              maxWidth: "22ch",
-            }}
-          >
-            A workshop where<br />
-            <em style={{ color: "var(--olive)" }}>aluminium meets art.</em>
-          </h2>
-        </FadeUp>
-
-        <FadeUp delay={160}>
-          <p
-            className="text-sm sm:text-base leading-relaxed max-w-md"
-            style={{ color: "oklch(45% .015 80)" }}
-          >
-            Welcome to Makewin Aluminum Kitchen Factory. From our fully automatic
-            plant in Bhilwara, Rajasthan, we design and manufacture high-quality
-            aluminum furniture — built to outlive trends and elevate every space,
-            residential or commercial.
-          </p>
-        </FadeUp>
-      </section>
-
-      {/* Thin separator */}
-      <div className="h-px" style={{ backgroundColor: "var(--border)" }} />
 
       {/* ══════════════════════════════════════════════════════════
           S7 — BOTTOM CTA
       ══════════════════════════════════════════════════════════ */}
       <section className="bg-cream px-8 sm:px-14 lg:px-20 py-32 sm:py-40 lg:py-52 text-center flex flex-col items-center">
-        <FadeUp>
-          <p
-            className="text-[9px] tracking-[0.38em] uppercase mb-10"
-            style={{ color: "var(--olive)" }}
-          >
-            Let&apos;s Work Together
-          </p>
-        </FadeUp>
-
         <FadeUp delay={80}>
           <h2
             className="font-display leading-tight mb-8"

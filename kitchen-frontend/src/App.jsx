@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 // import ChatBot from "./components/ChatBot"; // CHATBOT DISABLED
 import ScrollToTop from "./components/ScrollToTop";
+import WhatsAppButton from "./components/WhatsAppButton";
 import ToastViewport from "./components/ToastViewport";
 
 import Home from "./pages/Home";
@@ -44,6 +45,7 @@ function PublicLayout() {
         <Route path="/dealers" element={<DealerLocator />} />
       </Routes>
       <Footer />
+      <WhatsAppButton />
       {/* <ChatBot /> */}{/* CHATBOT DISABLED */}
     </>
   );

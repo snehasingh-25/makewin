@@ -115,7 +115,7 @@ export default function Footer() {
                 color: "var(--ink)",
               }}
             >
-              MakeWin
+              Makewin
             </h2>
             <div
               className="absolute left-0 h-px"
@@ -141,7 +141,7 @@ export default function Footer() {
         {/* Copyright */}
         <div className="pt-6 border-t" style={{ borderColor: "oklch(88% .01 80)" }}>
           <p className="text-[11px] tracking-wide" style={{ color: "oklch(52% .015 80)" }}>
-            &copy; {year} MakeWin. All rights reserved.
+            &copy; {year} Makewin. All rights reserved.
           </p>
         </div>
       </div>
