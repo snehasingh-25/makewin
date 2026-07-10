@@ -131,7 +131,7 @@ export default function Home() {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             aria-hidden="true"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />

@@ -71,6 +71,7 @@ export default function CategoriesPage() {
   }, [hash, loading]);
 
   useEffect(() => {
+    setLoading(true);
     const ac = new AbortController();
 
     if (slug) {
@@ -118,14 +119,6 @@ export default function CategoriesPage() {
     return map;
   }, [allProducts]);
 
-  const featuredProducts = useMemo(
-    () => (Array.isArray(allProducts) ? allProducts.filter((product) => Boolean(product.isFeatured)) : []),
-    [allProducts]
-  );
-  const regularProducts = useMemo(
-    () => (Array.isArray(allProducts) ? allProducts.filter((product) => !product.isFeatured) : []),
-    [allProducts]
-  );
 
   // Hero image: fall back to first product image (banners disabled)
   const heroImageUrl =
@@ -178,6 +171,9 @@ export default function CategoriesPage() {
       </div>
     );
   }
+
+  // ── Filtered view for /category/:slug ──
+  if (slug) return <CategoryFilteredView slug={slug} categories={categories} />;
 
   // ── Main catalogue render ──
   return (
@@ -308,41 +304,9 @@ export default function CategoriesPage() {
         </section>
       )}
 
-      {/* ── Section 3: Featured Products ──────────────────────────────────── */}
-      {featuredProducts.length > 0 && (
-        <section className="px-6 sm:px-10 lg:px-16 xl:px-20 py-12 lg:py-16">
-          <div className="mb-8 sm:mb-10">
-            <p
-              className="text-[10px] tracking-[0.25em] uppercase mb-2"
-              style={{ color: "var(--olive)" }}
-            >
-              Our Collection
-            </p>
-            <h2
-              className="font-display text-3xl sm:text-4xl lg:text-5xl"
-              style={{ color: "var(--ink)" }}
-            >
-              Featured Products
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} catalogue />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {regularProducts.length > 0 && (
+      {allProducts.length > 0 && (
         <section id="products" className="px-6 sm:px-10 lg:px-16 xl:px-20 pb-12 lg:pb-16">
           <div className="mb-8 sm:mb-10">
-            <p
-              className="text-[10px] tracking-[0.25em] uppercase mb-2"
-              style={{ color: "var(--olive)" }}
-            >
-              Products
-            </p>
             <h2
               className="font-display text-3xl sm:text-4xl lg:text-5xl"
               style={{ color: "var(--ink)" }}
@@ -352,7 +316,7 @@ export default function CategoriesPage() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {regularProducts.map((product) => (
+            {allProducts.map((product) => (
               <ProductCard key={product.id} product={product} catalogue />
             ))}
           </div>
