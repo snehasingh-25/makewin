@@ -129,12 +129,12 @@ export default function Footer() {
           </div>
 
           <p
-            className="mt-6 sm:mt-8 text-sm sm:text-base leading-relaxed max-w-lg"
-            style={{ color: "oklch(42% .015 80)" }}
+            className="mt-6 sm:mt-8 text-sm sm:text-base leading-relaxed max-w-lg font-semibold"
+            style={{ color: "oklch(12% .01 80)" }}
           >
             A workshop where{" "}
-            <em style={{ color: ACCENT, fontStyle: "normal" }}>aluminium</em> meets{" "}
-            <em style={{ color: ACCENT, fontStyle: "normal" }}>art.</em>
+            <em style={{ color: "oklch(12% .01 80)", fontStyle: "normal" }}>aluminium</em> meets{" "}
+            <em style={{ color: "oklch(12% .01 80)", fontStyle: "normal" }}>art.</em>
           </p>
         </div>
 

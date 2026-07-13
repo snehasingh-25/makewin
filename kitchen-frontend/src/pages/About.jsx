@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react"; // useEffect/useState used by FadeUp/FadeIn hooks
 import { Link } from "react-router-dom";
 
 // ─── Intersection-observer hook ──────────────────────────────────────────────
@@ -62,22 +62,9 @@ function FadeIn({ children, from = "bottom", delay = 0, className = "", threshol
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function About() {
-  const [scrolled, setScrolled] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
     <div className="bg-cream overflow-x-hidden">
       <style>{`
-        @keyframes chevron-bounce {
-          0%, 100% { transform: translateY(0); opacity: 0.5; }
-          50%       { transform: translateY(7px); opacity: 0.9; }
-        }
-        .chevron-bounce { animation: chevron-bounce 2.2s ease-in-out infinite; }
-
         .partner-card {
           transition: transform 0.35s cubic-bezier(0.16,1,0.3,1),
                       box-shadow 0.35s ease,
@@ -109,50 +96,6 @@ export default function About() {
           transition: background 0.3s, color 0.3s;
         }
       `}</style>
-
-      {/* ══════════════════════════════════════════════════════════
-          S1 — HERO
-      ══════════════════════════════════════════════════════════ */}
-      <section
-        className="relative w-full min-h-screen flex flex-col justify-end"
-        style={{ backgroundColor: "var(--ink)" }}
-      >
-        <div className="absolute inset-0 overflow-hidden">
-          <img
-            src="/about-hero.png"
-            alt="MakeWin Kitchen"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
-        </div>
-
-        <div className="relative z-10 px-8 sm:px-14 lg:px-20 pb-24 pt-48 lg:pt-56">
-          <h1
-            className="font-display leading-[0.92] mb-7"
-            style={{ fontSize: "clamp(4rem, 13vw, 11rem)", color: "white" }}
-          >
-            About<br />Company
-          </h1>
-          <p
-            className="font-display italic"
-            style={{ fontSize: "clamp(1.1rem, 2.4vw, 2rem)", color: "var(--tan)" }}
-          >
-            Crafted with aluminium. Designed for life.
-          </p>
-        </div>
-
-        <div
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1.5 chevron-bounce pointer-events-none"
-          style={{ opacity: scrolled ? 0 : 1, transition: "opacity 0.5s ease" }}
-        >
-          <span className="text-[8px] tracking-[0.32em] uppercase" style={{ color: "rgba(255,255,255,0.35)" }}>
-            Scroll
-          </span>
-          <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
-            <path d="M1 1L7 7L13 1" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </div>
-      </section>
 
       {/* ══════════════════════════════════════════════════════════
           S2 — ABOUT COMPANY
@@ -250,7 +193,7 @@ export default function About() {
                 { stat: "18,000+", label: "Sq. Ft Factory" },
                 { stat: "100%",    label: "Aluminium" },
                 { stat: "0%",      label: "Wood" },
-                { stat: "Made in India", label: "Factory-finished in Bhilwara" },
+                { stat: "Make in India", label: "Factory in Bhilwara" },
               ].map(({ stat, label }) => (
                 <div
                   key={stat}
@@ -465,7 +408,7 @@ export default function About() {
         {/* Label + title */}
         <FadeUp delay={0}>
           <p className="text-sm sm:text-base font-semibold tracking-[0.18em] uppercase mb-6" style={{ color: "white", backgroundColor: "var(--ink)", display: "inline-block", padding: "4px 14px" }}>
-            About Working Partners
+            Brand For Your Kitchen
           </p>
         </FadeUp>
         <FadeUp delay={80}>
@@ -486,18 +429,18 @@ export default function About() {
         {/* Logo grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {[
-            { name: "Vellix",  sub: "Elevate Your Space" },
-            { name: "Ozone",   sub: "Architectural Hardware" },
-            { name: "Hettich", sub: "Hardware & Fittings" },
-            { name: "Bosch",   sub: "Home Appliances" },
-            { name: "Faber",   sub: "Franke's Air Expert" },
-            { name: "Blum",    sub: "Furniture Fittings" },
-            { name: "Scilm",   sub: "Scilm America" },
-            { name: "Siemens", sub: "Home Appliances" },
-          ].map(({ name, sub }, i) => (
+            { name: "Vellix",  sub: "Elevate Your Space",      logo: "/partner-vellix.png" },
+            { name: "Ozone",   sub: "Architectural Hardware",   logo: "/partner-ozone.png" },
+            { name: "Hettich", sub: "Hardware & Fittings",      logo: "/partner-hettich.png" },
+            { name: "Bosch",   sub: "Home Appliances",          logo: "/partner-bosch.png" },
+            { name: "Faber",   sub: "Air Matters",              logo: "/partner-faber.png" },
+            { name: "Blum",    sub: "Furniture Fittings",       logo: "/partner-blum.png" },
+            { name: "Scilm",   sub: "Scilm America",            logo: "/partner-scilm.png" },
+            { name: "Siemens", sub: "Home Appliances",          logo: "/partner-siemens.png" },
+          ].map(({ name, sub, logo }, i) => (
             <FadeIn key={name} from="bottom" delay={i * 60} className="h-full">
               <div
-                className="partner-card h-full flex flex-col items-center justify-center text-center px-6 py-8 sm:py-10"
+                className="partner-card h-full flex flex-col items-center justify-center text-center px-6 py-8 sm:py-10 gap-4"
                 style={{
                   backgroundColor: "rgba(255,255,255,0.7)",
                   backdropFilter: "blur(12px)",
@@ -505,15 +448,26 @@ export default function About() {
                   border: "1px solid oklch(0.88 0.012 80)",
                 }}
               >
-                <p
-                  className="font-display mb-2"
-                  style={{ fontSize: "clamp(1.1rem, 2vw, 1.5rem)", color: "var(--ink)", letterSpacing: "0.02em", fontWeight: 600 }}
-                >
-                  {name}
-                </p>
-                <p className="partner-logo text-[9px] tracking-[0.14em] uppercase" style={{ color: "oklch(45% .015 80)" }}>
-                  {sub}
-                </p>
+                <div className="w-full flex items-center justify-center" style={{ height: "64px" }}>
+                  <img
+                    src={logo}
+                    alt={name}
+                    className="max-h-full max-w-full object-contain"
+                    style={{ maxHeight: "64px", maxWidth: "140px" }}
+                    loading="lazy"
+                  />
+                </div>
+                <div>
+                  <p
+                    className="font-display mb-1"
+                    style={{ fontSize: "clamp(1rem, 1.8vw, 1.3rem)", color: "var(--ink)", letterSpacing: "0.02em", fontWeight: 600 }}
+                  >
+                    {name}
+                  </p>
+                  <p className="text-[9px] tracking-[0.14em] uppercase" style={{ color: "oklch(45% .015 80)" }}>
+                    {sub}
+                  </p>
+                </div>
               </div>
             </FadeIn>
           ))}

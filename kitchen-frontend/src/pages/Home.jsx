@@ -242,8 +242,24 @@ export default function Home() {
           Two columns: image left, text + 3 trust indicators right.
       ══════════════════════════════════════════════════════════ */}
       <section className="bg-cream px-8 sm:px-14 lg:px-20 pb-28 sm:pb-36 lg:pb-44">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <FadeUp className="w-full">
+        {/*
+          Mobile:  heading (1) → image (2) → description (3)
+          Desktop: image left col (1) | heading + description right col (2)
+        */}
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-20 lg:items-center">
+
+          {/* Heading — visible only on mobile, sits above the image */}
+          <FadeUp className="lg:hidden">
+            <h2
+              className="font-display leading-tight"
+              style={{ fontSize: "clamp(1.8rem, 3.8vw, 2.8rem)", color: "var(--ink)" }}
+            >
+              Crafted in our own factory
+            </h2>
+          </FadeUp>
+
+          {/* Image — mobile: second, desktop: left column */}
+          <FadeUp className="w-full lg:order-first">
             <div className="w-full">
               <div className="relative w-full overflow-hidden aspect-[4/3]">
                 <img
@@ -255,16 +271,17 @@ export default function Home() {
             </div>
           </FadeUp>
 
+          {/* Right col: heading (desktop only) + description */}
           <FadeUp delay={120} className="w-full">
             <div>
               <h2
-                className="font-display leading-tight"
+                className="hidden lg:block font-display leading-tight"
                 style={{ fontSize: "clamp(1.8rem, 3.8vw, 2.8rem)", color: "var(--ink)" }}
               >
                 Crafted in our own factory
               </h2>
               <p
-                className="mt-6 text-sm sm:text-base leading-[1.85]"
+                className="lg:mt-6 text-sm sm:text-base leading-[1.85]"
                 style={{ color: "oklch(38% .02 80)" }}
               >
                 Every detail is shaped with care, from material selection to final finishing.
@@ -306,21 +323,6 @@ export default function Home() {
                 finishes, open the cabinets, see the craftsmanship up close.
                 Our experts are here to guide you.
               </p>
-              <Link
-                to="/contact"
-                className="inline-flex items-center gap-3 px-8 py-3.5 text-[9px] tracking-[0.28em] uppercase border transition-colors duration-300"
-                style={{ borderColor: "var(--olive)", color: "var(--olive)" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "var(--olive)";
-                  e.currentTarget.style.color = "white";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                  e.currentTarget.style.color = "var(--olive)";
-                }}
-              >
-                Book a Visit →
-              </Link>
             </div>
           </FadeUp>
         </div>

@@ -7,7 +7,7 @@ const PHONE = "+91 91661 66190";
 const PHONE_RAW = "919166166190";
 const EMAIL = "makewinglobal@gmail.com";
 const WHATSAPP_BOOK = `https://wa.me/${PHONE_RAW}?text=${encodeURIComponent("Hi! I'd like to book a consultation with Makewin.")}`;
-const MAPS_EMBED = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3572.0!2d74.64!3d25.35!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sMakewin+Global+Pvt+Ltd+Bhilwara!5e0!3m2!1sen!2sin!4v1000000000000";
+const MAPS_EMBED = "https://maps.google.com/maps?q=Near+Hormann+Door+Panna+Dhay+Circle+Azad+Nagar+Bhilwara+Rajasthan+311002&output=embed&hl=en";
 const MAPS_DIRECTIONS = "https://maps.google.com/?q=Near+Hormann+Door+Panna+Dhay+Circle+Azad+Nagar+Bhilwara+Rajasthan+311002";
 
 const PROJECT_TYPES = [
