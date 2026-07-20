@@ -57,7 +57,41 @@ export default function Home() {
   useEffect(() => {
     const video = heroVideoRef.current;
     if (!video) return;
-    video.play().catch(() => {});
+
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute("muted", "");
+    video.setAttribute("playsinline", "");
+    video.setAttribute("webkit-playsinline", "");
+
+    const tryPlay = () => {
+      video.muted = true;
+      if (video.paused) {
+        video.play().catch(() => {});
+      }
+    };
+
+    tryPlay();
+    video.addEventListener("loadeddata", tryPlay);
+    video.addEventListener("canplay", tryPlay);
+    video.addEventListener("canplaythrough", tryPlay);
+    video.addEventListener("suspend", tryPlay);
+    video.addEventListener("stalled", tryPlay);
+    video.addEventListener("pause", tryPlay);
+
+    // Keep playing even if the browser briefly pauses autoplay
+    const watchdog = setInterval(tryPlay, 1500);
+
+    return () => {
+      clearInterval(watchdog);
+      video.removeEventListener("loadeddata", tryPlay);
+      video.removeEventListener("canplay", tryPlay);
+      video.removeEventListener("canplaythrough", tryPlay);
+      video.removeEventListener("suspend", tryPlay);
+      video.removeEventListener("stalled", tryPlay);
+      video.removeEventListener("pause", tryPlay);
+    };
   }, []);
 
   useEffect(() => {
@@ -122,19 +156,22 @@ export default function Home() {
         className="relative w-full h-[89.1svh] flex flex-col justify-end overflow-hidden"
         style={{ backgroundColor: "var(--ink)" }}
       >
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden" style={{ backgroundColor: "#000" }}>
           <video
             ref={heroVideoRef}
-            className="absolute inset-0 w-full h-full object-cover object-center"
-            src="/home-hero.mp4"
+            className="absolute inset-0 z-0 w-full h-full object-cover object-center"
             autoPlay
             muted
             loop
             playsInline
-            preload="metadata"
+            preload="auto"
             aria-hidden="true"
+          >
+            <source src="/home-hero.mp4?v=20260720" type="video/mp4" />
+          </video>
+          <div
+            className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-t from-black/70 via-black/30 to-black/10"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/45 to-black/15" />
         </div>
 
         <div className="relative z-10 px-8 sm:px-14 lg:px-20 pb-10 sm:pb-12">
@@ -184,9 +221,9 @@ export default function Home() {
         </FadeUp>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
           {[
-            { label: "Modular\nKitchens", link: "/category/kitchen", img: "/about-kitchens.png", alt: "MakeWin Modular Kitchen" },
-            { label: "Wardrobes", link: "/category/q", img: "/about-wardrobes.png", alt: "MakeWin Wardrobes" },
-            { label: "Interior\nSolutions", link: "/categories#products", img: "/about-interior.png", alt: "MakeWin Interior Solutions" },
+            { label: "Modular Kitchen\nin Aluminium", link: "/category/kitchen", img: "/home-product-1.png", alt: "Makewin Modular Kitchen" },
+            { label: "Wardrobes\nin Aluminium", link: "/category/q", img: "/about-wardrobes.png", alt: "Makewin Wardrobes" },
+            { label: "Doors\nin Aluminium", link: "/categories#products", img: "/home-image-3.png", alt: "Makewin Doors in Aluminium" },
           ].map(({ label, link, img, alt }, i) => (
             <FadeUp key={label} delay={i * 110} className="w-full">
               <Link
@@ -264,7 +301,7 @@ export default function Home() {
               <div className="relative w-full overflow-hidden aspect-[4/3]">
                 <img
                   src="/about-factory.png"
-                  alt="MakeWin Factory"
+                  alt="Makewin Factory"
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out hover:scale-[1.03]"
                 />
               </div>
@@ -298,7 +335,7 @@ export default function Home() {
           S5 — EXPERIENCE CENTRE
           Dark. Large cinematic image. Minimal copy. Strong CTA.
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-24 sm:pt-32 lg:pt-40 pb-16 sm:pb-20">
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-24 sm:pt-32 lg:pt-40 pb-8 sm:pb-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-end mb-14 lg:mb-18">
 
           <FadeUp>
@@ -328,10 +365,10 @@ export default function Home() {
         </div>
 
         <FadeUp threshold={0.06}>
-          <div className="relative w-full overflow-hidden aspect-[21/9]">
+          <div className="relative w-[90%] mx-auto overflow-hidden aspect-[21/9]">
             <img
-              src="/about-experience.png"
-              alt="MakeWin Showroom"
+              src="/home-image-5.png"
+              alt="Makewin Showroom"
               className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out hover:scale-[1.02]"
             />
           </div>
@@ -341,7 +378,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           MAGAZINE — centred feature
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 py-28 sm:py-36 lg:py-44">
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-12 sm:pt-16 lg:pt-20 pb-28 sm:pb-36 lg:pb-44">
         <FadeUp>
           <h2
             className="text-center font-sans font-bold uppercase tracking-[0.35em] mb-12 sm:mb-16"
@@ -382,7 +419,7 @@ export default function Home() {
       {/* ══════════════════════════════════════════════════════════
           S7 — BOTTOM CTA
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 py-32 sm:py-40 lg:py-52 text-center flex flex-col items-center">
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 py-6 sm:py-8 lg:py-10 text-center flex flex-col items-center">
         <FadeUp delay={80}>
           <h2
             className="font-display leading-tight mb-8"
@@ -401,7 +438,7 @@ export default function Home() {
             className="text-xs sm:text-sm tracking-widest uppercase mb-14"
             style={{ color: "oklch(55% .015 80)" }}
           >
-            Start your journey with MakeWin Kitchens.
+            Start your journey with Makewin Kitchens.
           </p>
         </FadeUp>
 
@@ -434,13 +471,13 @@ export default function Home() {
             >
               Follow Us{" "}
               <a
-                href="https://www.instagram.com/MakeWin"
+                href="https://www.instagram.com/Makewin"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline transition-all"
                 style={{ color: "var(--primary)" }}
               >
-                @MakeWin
+                @Makewin
               </a>
             </h2>
             <ReelCarousel reels={reels} />

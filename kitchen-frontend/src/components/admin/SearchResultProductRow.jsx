@@ -22,7 +22,7 @@ export default function SearchResultProductRow({ product, onEdit, onDuplicate, o
             className="w-14 h-14 rounded-lg flex items-center justify-center"
             style={{ backgroundColor: "var(--primary)" }}
           >
-            <img src="/logo.png" alt="MakeWin Logo" className="w-10 h-10 object-contain opacity-50" />
+            <img src="/logo.png" alt="Makewin Logo" className="w-10 h-10 object-contain opacity-50" />
           </div>
         )}
       </div>

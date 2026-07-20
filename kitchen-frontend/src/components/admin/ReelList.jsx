@@ -49,7 +49,7 @@ export default function ReelList({ reels, onEdit, onDelete }) {
           <img src={reel.thumbnail} alt={reel.title || "Reel"} className="w-16 h-10 object-cover rounded" />
         ) : (
           <div className="w-16 h-10 rounded flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--primary)' }}>
-            <img src="/logo.png" alt="MakeWin Logo" className="w-10 h-10 object-contain opacity-50" />
+            <img src="/logo.png" alt="Makewin Logo" className="w-10 h-10 object-contain opacity-50" />
           </div>
         )}
       </div>
@@ -139,7 +139,7 @@ export default function ReelList({ reels, onEdit, onDelete }) {
       title="All Reels"
       emptyState={
         <>
-          <img src="/logo.png" alt="MakeWin Logo" className="w-20 h-20 mx-auto mb-4 object-contain opacity-50" />
+          <img src="/logo.png" alt="Makewin Logo" className="w-20 h-20 mx-auto mb-4 object-contain opacity-50" />
           <p className="text-gray-600 font-medium">No reels added yet. Add your first reel above!</p>
         </>
       }

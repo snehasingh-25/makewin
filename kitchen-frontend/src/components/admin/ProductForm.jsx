@@ -22,7 +22,8 @@ function parseProductImages(images) {
   return [];
 }
 
-const OPTIMISTIC_DELAY_MS = 1000;
+
+
 
 export default function ProductForm({
   product,
@@ -314,21 +315,23 @@ export default function ProductForm({
       }
       const tempId = `temp-${Date.now()}`;
       const optimisticProduct = buildOptimisticProduct(tempId);
-      setTimeout(() => {
-        onOptimisticAdd(optimisticProduct);
-        toast.success("Product added successfully");
-      }, OPTIMISTIC_DELAY_MS);
 
       try {
         const formDataToSend = buildFormPayload();
         const res = await axios.post("/products", formDataToSend);
 
+        onOptimisticAdd(optimisticProduct);
         onOptimisticSuccess(tempId, res.data);
+        toast.success("Product added successfully");
         resetFormState();
         onSave();
       } catch (error) {
         onOptimisticFailure(tempId);
-        const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to save product. Please try again.";
+        const errorMsg =
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to save product. Please try again.";
         toast.error(errorMsg);
       } finally {
         setLoading(false);
@@ -346,7 +349,11 @@ export default function ProductForm({
       onSave();
       resetFormState();
     } catch (error) {
-      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to save product";
+      const errorMsg =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to save product";
       toast.error(errorMsg);
     } finally {
       setLoading(false);

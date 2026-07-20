@@ -157,17 +157,17 @@ export default function DealerLocator() {
         {list.map((d, i) => (
           <article key={d.id || i} className="border border-border bg-white rounded-xl shadow-sm hover:shadow-md transition duration-300 overflow-hidden">
             {/* Showroom image grid */}
-            <div className="grid grid-cols-2">
+            <div className="grid grid-cols-2 gap-1.5" style={{ backgroundColor: "var(--border)" }}>
               <img
                 src={resolveImage(d.image1, fallbackImage1)}
                 alt={`${d.firm} exterior`}
-                className="aspect-[4/3] w-full object-cover"
+                className="aspect-[4/3] w-full object-cover bg-white"
                 loading="lazy"
               />
               <img
                 src={resolveImage(d.image2, fallbackImage2)}
                 alt={`${d.firm} interior`}
-                className="aspect-[4/3] w-full object-cover"
+                className="aspect-[4/3] w-full object-cover bg-white"
                 loading="lazy"
               />
             </div>

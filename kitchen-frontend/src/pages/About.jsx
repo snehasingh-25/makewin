@@ -100,17 +100,17 @@ export default function About() {
       {/* ══════════════════════════════════════════════════════════
           S2 — ABOUT COMPANY
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-28 sm:pt-40 lg:pt-52 pb-20 sm:pb-28 lg:pb-36">
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-20 sm:pt-28 lg:pt-36 pb-16 sm:pb-20 lg:pb-28">
 
         {/* Section label + editorial title */}
         <FadeUp delay={0}>
-          <p className="text-sm sm:text-base font-semibold tracking-[0.18em] uppercase mb-6" style={{ color: "white", backgroundColor: "var(--ink)", display: "inline-block", padding: "4px 14px" }}>
+          <p className="text-sm sm:text-base font-semibold tracking-[0.18em] uppercase mb-5" style={{ color: "white", backgroundColor: "var(--ink)", display: "inline-block", padding: "4px 14px" }}>
             About Company
           </p>
         </FadeUp>
         <FadeUp delay={80}>
           <h2
-            className="font-display leading-[1.03] mb-24 sm:mb-32 lg:mb-40"
+            className="font-display leading-[1.03] mb-12 sm:mb-16 lg:mb-20"
             style={{ fontSize: "clamp(2.8rem, 7.5vw, 8rem)", color: "var(--ink)", maxWidth: "20ch" }}
           >
             A workshop where<br />
@@ -119,7 +119,7 @@ export default function About() {
         </FadeUp>
 
         {/* ── Block 1: Factory image ── */}
-        <div className="mb-24 sm:mb-32 lg:mb-40">
+        <div className="mb-12 sm:mb-16 lg:mb-20">
           <FadeIn from="left" delay={0}>
             <div className="w-full lg:w-[70%]">
               <div className="relative w-full overflow-hidden" style={{ aspectRatio: "16/10" }}>
@@ -132,7 +132,7 @@ export default function About() {
                   onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
                 />
               </div>
-              <p className="text-[9px] tracking-[0.3em] uppercase mt-4" style={{ color: "oklch(55% .015 80)" }}>
+              <p className="text-[9px] tracking-[0.3em] uppercase mt-3" style={{ color: "oklch(55% .015 80)" }}>
                 Manufactured in Bhilwara, Rajasthan
               </p>
             </div>
@@ -140,19 +140,19 @@ export default function About() {
         </div>
 
         {/* ── Block 2: Machinery image + feature chips ── */}
-        <div className="mb-24 sm:mb-32 lg:mb-40 flex justify-end">
+        <div className="mb-12 sm:mb-16 lg:mb-20 flex justify-end">
           <FadeIn from="right" delay={0} className="w-full lg:w-[70%]">
             <div className="relative w-full overflow-hidden" style={{ aspectRatio: "16/10" }}>
-              <img
-                src="/about-kitchens.png"
-                alt="Makewin — Fully Automatic Manufacturing"
-                className="absolute inset-0 w-full h-full object-cover"
+                <img
+                  src="/about-page-machinery.png"
+                  alt="Makewin — CNC precision manufacturing"
+                  className="absolute inset-0 w-full h-full object-contain bg-white"
                 style={{ transition: "transform 1.2s cubic-bezier(0.16,1,0.3,1)" }}
                 onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.03)")}
                 onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
               />
             </div>
-            <p className="text-[9px] tracking-[0.3em] uppercase mt-4 mb-5" style={{ color: "oklch(55% .015 80)" }}>
+            <p className="text-[9px] tracking-[0.3em] uppercase mt-3 mb-4" style={{ color: "oklch(55% .015 80)" }}>
               Fully Automatic Manufacturing
             </p>
             <div className="flex flex-wrap gap-2">
@@ -170,10 +170,10 @@ export default function About() {
         </div>
 
         {/* ── Block 3: Copy + stat cards ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-start">
           <FadeIn from="left" delay={0}>
             <h2
-              className="font-display leading-[1.05] mb-8"
+              className="font-display leading-[1.05] mb-6"
               style={{ fontSize: "clamp(2.2rem, 4.5vw, 5rem)", color: "var(--ink)" }}
             >
               Built in India.<br />Built to Last.
@@ -205,7 +205,7 @@ export default function About() {
                   }}
                 >
                   <p
-                    className="font-display leading-tight mb-1"
+                    className="font-sans font-semibold leading-tight mb-1 tabular-nums"
                     style={{ fontSize: "clamp(1.3rem, 2.5vw, 2rem)", color: "var(--ink)" }}
                   >
                     {stat}
@@ -220,22 +220,22 @@ export default function About() {
         </div>
 
         {/* ── Block 4: Core Material + Promise cards ── */}
-        <div className="mt-24 sm:mt-32 lg:mt-40">
+        <div className="mt-14 sm:mt-20 lg:mt-24">
           <FadeUp delay={0}>
             <p
-              className="text-[10px] tracking-[0.3em] uppercase mb-4"
+              className="text-[10px] tracking-[0.3em] uppercase mb-3"
               style={{ color: "var(--olive)" }}
             >
               Core Material
             </p>
             <h3
-              className="font-display leading-[1.05] mb-6"
+              className="font-display leading-[1.05] mb-5"
               style={{ fontSize: "clamp(1.8rem, 3.5vw, 3.5rem)", color: "var(--ink)" }}
             >
               Premium Aluminium. <em style={{ color: "var(--olive)" }}>Built Different.</em>
             </h3>
             <p
-              className="text-sm sm:text-base leading-[1.9] mb-12 sm:mb-16"
+              className="text-sm sm:text-base leading-[1.9] mb-8 sm:mb-10"
               style={{ color: "oklch(42% .015 80)", maxWidth: "72ch" }}
             >
               Our aluminum furniture is built using premium-quality aluminium that ensures exceptional
@@ -254,7 +254,12 @@ export default function About() {
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                 ),
-                title: "10 Year Warranty",
+                title: (
+                  <>
+                    <span className="font-sans font-semibold tabular-nums">10</span> Year Warranty
+                  </>
+                ),
+                titleKey: "10 Year Warranty",
                 body: "Every Makewin aluminium furniture comes with a 10-year warranty against manufacturing defects.",
               },
               {
@@ -264,6 +269,7 @@ export default function About() {
                   </svg>
                 ),
                 title: "After Sales Service",
+                titleKey: "After Sales Service",
                 body: "Makewin provides all customers 4 free services within 10 years of installation.",
               },
               {
@@ -276,10 +282,11 @@ export default function About() {
                   </svg>
                 ),
                 title: "Delivery Time",
+                titleKey: "Delivery Time",
                 body: "Your furniture is delivered within 30 days of order finalisation.",
               },
-            ].map(({ icon, title, body }) => (
-              <FadeUp key={title} delay={80}>
+            ].map(({ icon, title, titleKey, body }) => (
+              <FadeUp key={titleKey} delay={80}>
                 <div
                   className="h-full p-7 sm:p-8 flex flex-col gap-5"
                   style={{
@@ -309,32 +316,43 @@ export default function About() {
           S3 — EXPERIENCE CENTRE
       ══════════════════════════════════════════════════════════ */}
       <section
-        className="px-8 sm:px-14 lg:px-20 pt-28 sm:pt-40 lg:pt-52 pb-28 sm:pb-36 lg:pb-44"
+        className="px-8 sm:px-14 lg:px-20 pt-20 sm:pt-28 lg:pt-36 pb-20 sm:pb-28 lg:pb-32"
         style={{ backgroundColor: "var(--ink)" }}
       >
         {/* Section label + editorial title */}
         <FadeUp delay={0}>
-          <p className="text-sm sm:text-base font-semibold tracking-[0.18em] uppercase mb-6" style={{ color: "var(--ink)", backgroundColor: "white", display: "inline-block", padding: "4px 14px" }}>
-            About Experience Centre
-          </p>
+          <h2
+            className="font-display leading-[1.1] mb-3"
+            style={{
+              fontSize: "clamp(1.65rem, 3.2vw, 2.6rem)",
+              color: "white",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            About Company Experience Centre
+          </h2>
+          <div
+            className="mb-8 sm:mb-10"
+            style={{ width: "4.5rem", height: "3px", backgroundColor: "var(--tan)" }}
+          />
         </FadeUp>
         <FadeUp delay={80}>
-          <h2
-            className="font-display leading-[1.0] mb-24 sm:mb-32 lg:mb-40"
+          <h3
+            className="font-display leading-[1.0] mb-12 sm:mb-16 lg:mb-20"
             style={{ fontSize: "clamp(2.8rem, 7.5vw, 8rem)", color: "white", maxWidth: "16ch" }}
           >
             See it.<br />Feel it.<br />
             <em style={{ color: "var(--tan)" }}>Live it.</em>
-          </h2>
+          </h3>
         </FadeUp>
 
         {/* ── Block 1: Exterior showroom ── */}
-        <div className="mb-24 sm:mb-32 lg:mb-40">
+        <div className="mb-12 sm:mb-16 lg:mb-20">
           <FadeIn from="left" delay={0}>
             <div className="w-full lg:w-[70%]">
               <div className="relative w-full overflow-hidden" style={{ aspectRatio: "16/10" }}>
                 <img
-                  src="/about-experience.png"
+                  src="/about-page-exterior.png"
                   alt="Makewin Experience Centre Exterior"
                   className="absolute inset-0 w-full h-full object-cover"
                   style={{ transition: "transform 1.2s cubic-bezier(0.16,1,0.3,1)" }}
@@ -342,7 +360,7 @@ export default function About() {
                   onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
                 />
               </div>
-              <p className="text-[9px] tracking-[0.3em] uppercase mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>
+              <p className="text-[9px] tracking-[0.3em] uppercase mt-3" style={{ color: "rgba(255,255,255,0.3)" }}>
                 Experience Centre Exterior
               </p>
             </div>
@@ -350,7 +368,7 @@ export default function About() {
         </div>
 
         {/* ── Block 2: Interior showroom ── */}
-        <div className="mb-24 sm:mb-32 lg:mb-40 flex justify-end">
+        <div className="mb-12 sm:mb-16 lg:mb-20 flex justify-end">
           <FadeIn from="right" delay={0} className="w-full lg:w-[70%]">
             <div className="relative w-full overflow-hidden" style={{ aspectRatio: "16/10" }}>
               <img
@@ -362,14 +380,14 @@ export default function About() {
                 onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
               />
             </div>
-            <p className="text-[9px] tracking-[0.3em] uppercase mt-4" style={{ color: "rgba(255,255,255,0.3)" }}>
+            <p className="text-[9px] tracking-[0.3em] uppercase mt-3" style={{ color: "rgba(255,255,255,0.3)" }}>
               Premium Interior Experience
             </p>
           </FadeIn>
         </div>
 
         {/* ── Block 3: Description + CTA ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-end">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-end">
           <FadeIn from="left" delay={0}>
             <p className="text-sm sm:text-base leading-[1.9] max-w-md" style={{ color: "rgba(255,255,255,0.55)" }}>
               Our experience centre in Bhilwara allows customers to explore premium kitchens,
@@ -403,24 +421,35 @@ export default function About() {
       {/* ══════════════════════════════════════════════════════════
           S4 — WORKING PARTNERS
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-28 sm:pt-40 lg:pt-52 pb-28 sm:pb-36 lg:pb-44">
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-20 sm:pt-28 lg:pt-36 pb-20 sm:pb-28 lg:pb-32">
 
         {/* Label + title */}
         <FadeUp delay={0}>
-          <p className="text-sm sm:text-base font-semibold tracking-[0.18em] uppercase mb-6" style={{ color: "white", backgroundColor: "var(--ink)", display: "inline-block", padding: "4px 14px" }}>
+          <h2
+            className="font-display leading-[1.1] mb-3"
+            style={{
+              fontSize: "clamp(1.65rem, 3.2vw, 2.6rem)",
+              color: "var(--ink)",
+              letterSpacing: "-0.01em",
+            }}
+          >
             Brand For Your Kitchen
-          </p>
+          </h2>
+          <div
+            className="mb-8 sm:mb-10"
+            style={{ width: "4.5rem", height: "3px", backgroundColor: "var(--olive)" }}
+          />
         </FadeUp>
         <FadeUp delay={80}>
-          <h2
-            className="font-display leading-[1.03] mb-8"
+          <h3
+            className="font-display leading-[1.03] mb-5"
             style={{ fontSize: "clamp(2.4rem, 6vw, 6.5rem)", color: "var(--ink)", maxWidth: "22ch" }}
           >
             Trusted by Industry Leaders
-          </h2>
+          </h3>
         </FadeUp>
         <FadeUp delay={140}>
-          <p className="text-sm sm:text-base leading-[1.9] max-w-lg mb-20 sm:mb-28 lg:mb-36" style={{ color: "oklch(42% .015 80)" }}>
+          <p className="text-sm sm:text-base leading-[1.9] max-w-lg mb-12 sm:mb-16 lg:mb-20" style={{ color: "oklch(42% .015 80)" }}>
             We collaborate with globally trusted brands to ensure every kitchen delivers
             exceptional quality, performance, and reliability.
           </p>
@@ -429,18 +458,18 @@ export default function About() {
         {/* Logo grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {[
-            { name: "Vellix",  sub: "Elevate Your Space",      logo: "/partner-vellix.png" },
-            { name: "Ozone",   sub: "Architectural Hardware",   logo: "/partner-ozone.png" },
-            { name: "Hettich", sub: "Hardware & Fittings",      logo: "/partner-hettich.png" },
-            { name: "Bosch",   sub: "Home Appliances",          logo: "/partner-bosch.png" },
-            { name: "Faber",   sub: "Air Matters",              logo: "/partner-faber.png" },
-            { name: "Blum",    sub: "Furniture Fittings",       logo: "/partner-blum.png" },
-            { name: "Scilm",   sub: "Scilm America",            logo: "/partner-scilm.png" },
-            { name: "Siemens", sub: "Home Appliances",          logo: "/partner-siemens.png" },
-          ].map(({ name, sub, logo }, i) => (
+            { name: "Vellix",  logo: "/partner-vellix.png" },
+            { name: "Ozone",   logo: "/partner-ozone.png" },
+            { name: "Hettich", logo: "/partner-hettich.png" },
+            { name: "Bosch",   logo: "/partner-bosch.png" },
+            { name: "Faber",   logo: "/partner-faber.png" },
+            { name: "Blum",    logo: "/partner-blum.png" },
+            { name: "Scilm",   logo: "/partner-scilm.png" },
+            { name: "Siemens", logo: "/partner-siemens.png" },
+          ].map(({ name, logo }, i) => (
             <FadeIn key={name} from="bottom" delay={i * 60} className="h-full">
               <div
-                className="partner-card h-full flex flex-col items-center justify-center text-center px-6 py-8 sm:py-10 gap-4"
+                className="partner-card h-full flex items-center justify-center px-6 py-8 sm:py-10"
                 style={{
                   backgroundColor: "rgba(255,255,255,0.7)",
                   backdropFilter: "blur(12px)",
@@ -457,17 +486,6 @@ export default function About() {
                     loading="lazy"
                   />
                 </div>
-                <div>
-                  <p
-                    className="font-display mb-1"
-                    style={{ fontSize: "clamp(1rem, 1.8vw, 1.3rem)", color: "var(--ink)", letterSpacing: "0.02em", fontWeight: 600 }}
-                  >
-                    {name}
-                  </p>
-                  <p className="text-[9px] tracking-[0.14em] uppercase" style={{ color: "oklch(45% .015 80)" }}>
-                    {sub}
-                  </p>
-                </div>
               </div>
             </FadeIn>
           ))}
@@ -481,12 +499,12 @@ export default function About() {
           S5 — BOTTOM CTA  (unchanged)
       ══════════════════════════════════════════════════════════ */}
       <section
-        className="px-8 sm:px-14 lg:px-20 py-32 sm:py-40 lg:py-52 text-center flex flex-col items-center"
+        className="px-8 sm:px-14 lg:px-20 py-24 sm:py-28 lg:py-36 text-center flex flex-col items-center"
         style={{ backgroundColor: "var(--ink)" }}
       >
         <FadeUp delay={80}>
           <h2
-            className="font-display text-white leading-tight mb-8"
+            className="font-display text-white leading-tight mb-6"
             style={{ fontSize: "clamp(2.6rem, 8vw, 8rem)", maxWidth: "20ch" }}
           >
             Let&apos;s Create Something Extraordinary.
@@ -494,7 +512,7 @@ export default function About() {
         </FadeUp>
 
         <FadeUp delay={160}>
-          <p className="text-xs sm:text-sm tracking-widest uppercase mb-14" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <p className="text-xs sm:text-sm tracking-widest uppercase mb-10" style={{ color: "rgba(255,255,255,0.35)" }}>
             Start your journey with Makewin Kitchens.
           </p>
         </FadeUp>

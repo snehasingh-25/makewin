@@ -212,7 +212,7 @@ export default function OrderableList({
       <div className={`bg-cream rounded-xl shadow-md p-12 text-center border ${className}`} style={{ borderColor: 'var(--primary)' }}>
         {emptyState || (
           <>
-            <img src="/logo.png" alt="MakeWin Logo" className="w-20 h-20 mx-auto mb-4 object-contain opacity-50" />
+            <img src="/logo.png" alt="Makewin Logo" className="w-20 h-20 mx-auto mb-4 object-contain opacity-50" />
             <p className="text-gray-600 font-medium">No items yet.</p>
           </>
         )}

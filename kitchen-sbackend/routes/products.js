@@ -235,9 +235,32 @@ router.post("/", verifyToken, uploadProductMedia, async (req, res) => {
       videoUrls.push(url);
     }
 
-    const keywordsArray = keywords ? JSON.parse(keywords) : [];
-    const categoryIdsArray = categoryIds ? JSON.parse(categoryIds) : [];
+    const keywordsArray = (() => {
+      if (!keywords) return [];
+      try {
+        const parsed = typeof keywords === "string" ? JSON.parse(keywords) : keywords;
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    })();
+    const categoryIdsArray = (() => {
+      if (!categoryIds) return [];
+      try {
+        const parsed = typeof categoryIds === "string" ? JSON.parse(categoryIds) : categoryIds;
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    })();
     const featured = parseBoolean(isFeatured);
+
+    if (!name || !String(name).trim()) {
+      return res.status(400).json({ error: "Product name is required" });
+    }
+    if (!categoryIdsArray.length) {
+      return res.status(400).json({ error: "Please select at least one category" });
+    }
 
     const product = await prisma.product.create({
       data: {
@@ -301,14 +324,28 @@ router.put("/:id", verifyToken, uploadProductMedia, async (req, res) => {
       imageFiles: uploadedImageUrls,
     });
 
-    let videoUrls = existingVideos ? JSON.parse(existingVideos) : [];
+    let videoUrls = [];
+    if (existingVideos) {
+      try {
+        const parsed = typeof existingVideos === "string" ? JSON.parse(existingVideos) : existingVideos;
+        if (Array.isArray(parsed)) videoUrls = parsed;
+      } catch (_) {}
+    }
     const videoFiles = req.files?.videos || [];
     for (const file of videoFiles) {
       const url = await getVideoUrl(file);
       videoUrls.push(url);
     }
 
-    const keywordsArray = keywords ? JSON.parse(keywords) : [];
+    const keywordsArray = (() => {
+      if (!keywords) return [];
+      try {
+        const parsed = typeof keywords === "string" ? JSON.parse(keywords) : keywords;
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    })();
     const featured = parseBoolean(isFeatured);
 
     await prisma.productCategory.deleteMany({

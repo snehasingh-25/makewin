@@ -80,7 +80,7 @@ export default function Navbar() {
         {/* Left — brand */}
         <Link
           to="/"
-          className="shrink-0 font-mono text-[11px] sm:text-xs uppercase tracking-[0.18em] leading-tight transition-colors duration-300"
+          className="shrink-0 font-mono text-[11px] sm:text-xs tracking-[0.12em] leading-tight transition-colors duration-300"
           style={{
             color: edgeTextColor,
             textDecoration: "none",

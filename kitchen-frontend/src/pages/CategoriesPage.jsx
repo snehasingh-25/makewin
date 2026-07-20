@@ -199,27 +199,19 @@ export default function CategoriesPage() {
           </h1>
           <div className="w-10 h-px mb-6" style={{ backgroundColor: "var(--olive)" }} />
           <p
-            className="text-sm sm:text-base leading-relaxed mb-10 max-w-sm"
+            className="text-sm sm:text-base leading-relaxed max-w-sm"
             style={{ color: "oklch(45% .015 80)" }}
           >
             Explore our exclusive range of modular kitchens crafted with precision,
             premium materials, and timeless design.
           </p>
-          <a
-            href="#products"
-            className="inline-flex items-center gap-3 px-8 py-3.5 text-[10px] tracking-[0.2em] uppercase font-medium self-start transition-opacity hover:opacity-80"
-            style={{ backgroundColor: "var(--ink)", color: "white" }}
-          >
-            Explore Collection
-            <span>→</span>
-          </a>
         </div>
 
         {/* Right: image */}
         <div className="relative order-1 md:order-2 overflow-hidden" style={{ minHeight: "55vw", maxHeight: "100vh" }}>
           <img
-            src="/catalogue-hero.png"
-            alt="MakeWin Modular Kitchen — full feature view"
+            src="/products-hero.png"
+            alt="Makewin Modular Kitchen — full feature view"
             className="absolute inset-0 w-full h-full object-cover object-center"
           />
         </div>

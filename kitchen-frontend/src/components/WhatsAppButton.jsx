@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 const WHATSAPP_NUMBER = "919166166190";
-const WHATSAPP_MESSAGE = "Hi! I'd like to know more about Makewin Kitchens.";
+const WHATSAPP_MESSAGE = "Hi i want more information about your products";
 
 export default function WhatsAppButton() {
   const [showTop, setShowTop] = useState(false);

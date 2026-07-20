@@ -1,7 +1,7 @@
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { dirname, join, extname } from "path";
 import fs from "fs";
 import dotenv from "dotenv";
 
@@ -41,33 +41,91 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+const IMAGE_EXTS = new Set([
+  ".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".bmp", ".svg",
+  ".tif", ".tiff", ".heic", ".heif", ".ico", ".jfif", ".pjpeg", ".pjp",
+]);
+const VIDEO_EXTS = new Set([
+  ".mp4", ".webm", ".mov", ".m4v", ".avi", ".mkv", ".mpeg", ".mpg", ".ogv", ".3gp",
+]);
+const DOWNLOAD_EXTS = new Set([
+  ".pdf", ".doc", ".docx", ".zip", ".rar", ".7z",
+  ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".csv",
+  ...IMAGE_EXTS,
+  ...VIDEO_EXTS,
+]);
+
+function getExt(filename = "") {
+  return extname(filename).toLowerCase();
+}
+
+function isImageFile(file) {
+  const mime = (file.mimetype || "").toLowerCase();
+  if (mime.startsWith("image/")) return true;
+  // Browsers often send HEIC/unknown types as octet-stream or empty
+  if (!mime || mime === "application/octet-stream") {
+    return IMAGE_EXTS.has(getExt(file.originalname));
+  }
+  return IMAGE_EXTS.has(getExt(file.originalname));
+}
+
+function isVideoFile(file) {
+  const mime = (file.mimetype || "").toLowerCase();
+  if (mime.startsWith("video/")) return true;
+  if (!mime || mime === "application/octet-stream") {
+    return VIDEO_EXTS.has(getExt(file.originalname));
+  }
+  return VIDEO_EXTS.has(getExt(file.originalname));
+}
+
+function isDownloadFile(file) {
+  const mime = (file.mimetype || "").toLowerCase();
+  const ext = getExt(file.originalname);
+
+  if (isImageFile(file) || isVideoFile(file)) return true;
+
+  const allowedMimes = new Set([
+    "application/pdf",
+    "application/x-pdf",
+    "application/acrobat",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/zip",
+    "application/x-zip-compressed",
+    "application/x-rar-compressed",
+    "application/vnd.rar",
+    "application/octet-stream", // allow when extension is trusted
+  ]);
+
+  if (allowedMimes.has(mime) && DOWNLOAD_EXTS.has(ext)) return true;
+  if (DOWNLOAD_EXTS.has(ext)) return true;
+  return false;
+}
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = file.originalname.split(".").pop();
+    const ext = getExt(file.originalname) || "";
     let prefix = "file";
-    if (file.mimetype.startsWith("video/")) {
-      prefix = "video";
-    } else if (file.mimetype.startsWith("image/")) {
-      prefix = "image";
-    }
-    cb(null, `${prefix}-${uniqueSuffix}.${ext}`);
+    if (isVideoFile(file)) prefix = "video";
+    else if (isImageFile(file)) prefix = "image";
+    cb(null, `${prefix}-${uniqueSuffix}${ext || ".bin"}`);
   },
 });
 
 const upload = multer({
-  storage: storage,
+  storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 50 * 1024 * 1024, // 50MB — match product/dealer needs
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) {
+    if (isImageFile(file)) {
       cb(null, true);
     } else {
-      cb(new Error("Only image files are allowed"), false);
+      cb(new Error("Only image files are allowed (any common image format)"), false);
     }
   },
 });
@@ -76,12 +134,12 @@ export default upload;
 
 // Video upload (larger size)
 export const uploadVideo = multer({
-  storage: storage,
+  storage,
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("video/")) {
+    if (isVideoFile(file)) {
       cb(null, true);
     } else {
       cb(new Error("Only video files are allowed"), false);
@@ -91,13 +149,12 @@ export const uploadVideo = multer({
 
 // Combined upload for video and image (for reels: video + thumbnail)
 export const uploadReelFiles = multer({
-  storage: storage,
+  storage,
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB max (for videos)
   },
   fileFilter: (req, file, cb) => {
-    // Accept both video and image files
-    if (file.mimetype.startsWith("video/") || file.mimetype.startsWith("image/")) {
+    if (isVideoFile(file) || isImageFile(file)) {
       cb(null, true);
     } else {
       cb(new Error("Only video and image files are allowed"), false);
@@ -106,17 +163,16 @@ export const uploadReelFiles = multer({
 });
 
 // Product media: images (field "images") + videos (field "videos")
-// Max 50MB per file. Your reverse proxy (e.g. nginx) must allow this: client_max_body_size 50m;
 export const uploadProductMedia = multer({
-  storage: storage,
+  storage,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB per file (images and videos)
+    fileSize: 50 * 1024 * 1024, // 50MB per file
   },
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith("video/") || file.mimetype.startsWith("image/")) {
+    if (isVideoFile(file) || isImageFile(file)) {
       cb(null, true);
     } else {
-      cb(new Error("Only video and image files are allowed"), false);
+      cb(new Error("Only video and image files are allowed (any common format)"), false);
     }
   },
 }).fields([
@@ -125,7 +181,7 @@ export const uploadProductMedia = multer({
 ]);
 
 // Helper function to upload to Cloudinary
-export const uploadToCloudinary = async (filePath) => {
+export const uploadToCloudinary = async (filePath, originalName = "") => {
   if (!cloudinaryConfig) {
     return null;
   }
@@ -133,15 +189,14 @@ export const uploadToCloudinary = async (filePath) => {
   try {
     const result = await cloudinary.uploader.upload(filePath, {
       folder: "ecommerce",
-      resource_type: "image",
-      format: "webp",
+      resource_type: "auto",
       quality: "auto",
     });
     // Delete local file after upload
     fs.unlinkSync(filePath);
     return result.secure_url;
   } catch (error) {
-    console.error("Cloudinary upload error:", error);
+    console.error("Cloudinary upload error:", error?.message || error, originalName);
     return null;
   }
 };
@@ -149,7 +204,7 @@ export const uploadToCloudinary = async (filePath) => {
 // Helper function to get image URL
 export const getImageUrl = async (file) => {
   if (cloudinaryConfig) {
-    const cloudinaryUrl = await uploadToCloudinary(file.path);
+    const cloudinaryUrl = await uploadToCloudinary(file.path, file.originalname);
     if (cloudinaryUrl) {
       return cloudinaryUrl;
     }
@@ -168,41 +223,34 @@ export const getVideoUrl = async (file) => {
       fs.unlinkSync(file.path);
       return result.secure_url;
     } catch (error) {
-      console.error("Cloudinary video upload error:", error);
+      console.error("Cloudinary video upload error:", error?.message || error);
       // fall through to local
     }
   }
   return `/uploads/${file.filename}`;
 };
 
-// Combined upload for Download assets (PDF, DOC, ZIP, MP4) + optional Cover Image (JPG, PNG, WEBP)
+// Combined upload for Download assets (PDF, DOC, ZIP, MP4) + optional Cover Image
 export const uploadDownloadFiles = multer({
-  storage: storage,
+  storage,
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB per file
   },
   fileFilter: (req, file, cb) => {
-    // We can allow all standard files for downloads
-    const allowedMimeTypes = [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/zip",
-      "application/x-zip-compressed",
-      "video/mp4",
-      "image/jpeg",
-      "image/png",
-      "image/webp"
-    ];
-    if (allowedMimeTypes.includes(file.mimetype) || file.mimetype.startsWith("image/") || file.mimetype.startsWith("video/")) {
+    if (isDownloadFile(file)) {
       cb(null, true);
     } else {
-      cb(new Error(`File type ${file.mimetype} is not allowed. Please upload PDF, DOC, DOCX, ZIP, MP4, or images.`), false);
+      cb(
+        new Error(
+          `File type "${file.mimetype || "unknown"}" (${file.originalname}) is not allowed. Upload PDF, DOC, DOCX, ZIP, video, or any image format.`
+        ),
+        false
+      );
     }
   },
 }).fields([
   { name: "file", maxCount: 1 },
-  { name: "coverImage", maxCount: 1 }
+  { name: "coverImage", maxCount: 1 },
 ]);
 
 // Helper function to upload any asset (PDF, ZIP, DOC, MP4) to Cloudinary or return local path
@@ -210,9 +258,9 @@ export const getDownloadFileUrl = async (file) => {
   if (cloudinaryConfig) {
     try {
       let resourceType = "raw"; // raw for PDF, ZIP, DOC
-      if (file.mimetype.startsWith("image/")) {
+      if (isImageFile(file)) {
         resourceType = "image";
-      } else if (file.mimetype.startsWith("video/")) {
+      } else if (isVideoFile(file)) {
         resourceType = "video";
       }
 
@@ -221,8 +269,8 @@ export const getDownloadFileUrl = async (file) => {
         resource_type: resourceType,
       };
 
+      // Keep original for documents; optimize images only
       if (resourceType === "image") {
-        uploadOptions.format = "webp";
         uploadOptions.quality = "auto";
       }
 
@@ -230,10 +278,9 @@ export const getDownloadFileUrl = async (file) => {
       fs.unlinkSync(file.path);
       return result.secure_url;
     } catch (error) {
-      console.error("Cloudinary download file upload error:", error);
+      console.error("Cloudinary download file upload error:", error?.message || error);
       // Fall through to local
     }
   }
   return `/uploads/${file.filename}`;
 };
-

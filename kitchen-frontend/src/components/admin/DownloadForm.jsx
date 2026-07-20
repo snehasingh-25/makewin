@@ -193,7 +193,11 @@ export default function DownloadForm({ download, onSave, onCancel }) {
       removeCover();
       initialSnapshotRef.current = "";
     } catch (error) {
-      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Failed to save download asset";
+      const errorMsg =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to save download asset";
       toast.error(errorMsg);
     } finally {
       setLoading(false);
@@ -420,7 +424,7 @@ export default function DownloadForm({ download, onSave, onCancel }) {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,.doc,.docx,.zip,.mp4,image/*"
+                accept=".pdf,.doc,.docx,.zip,.rar,.mp4,.mov,image/*,.heic,.heif,.avif"
                 onChange={handleFileChange}
                 className="hidden"
               />

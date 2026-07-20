@@ -395,7 +395,7 @@ export default function ProductDetail() {
                 >
                   <img
                     src="/logo.png"
-                    alt="MakeWin"
+                    alt="Makewin"
                     className="absolute inset-0 m-auto w-24 h-24 object-contain opacity-40"
                   />
                 </div>
@@ -671,7 +671,7 @@ export default function ProductDetail() {
                 style={{ color: "oklch(45% .02 340)", maxWidth: "55ch" }}
               >
                 <p>
-                  Every MakeWin kitchen begins with a single question: how can a space feel
+                  Every Makewin kitchen begins with a single question: how can a space feel
                   both effortless and extraordinary? The answer lies in the precision of our
                   aluminium framework — engineered for a lifetime, finished to feel timeless.
                 </p>
@@ -714,7 +714,7 @@ export default function ProductDetail() {
                     backgroundColor: "var(--primary)",
                   }}
                 >
-                  <img src="/logo.png" alt="MakeWin" className="w-20 opacity-30" />
+                  <img src="/logo.png" alt="Makewin" className="w-20 opacity-30" />
                 </div>
               )}
               {/* Decorative offset block */}
@@ -913,7 +913,7 @@ export default function ProductDetail() {
                             className="w-full h-full flex items-center justify-center"
                             style={{ backgroundColor: "var(--primary)" }}
                           >
-                            <img src="/logo.png" alt="MakeWin" className="w-16 opacity-30" />
+                            <img src="/logo.png" alt="Makewin" className="w-16 opacity-30" />
                           </div>
                         )}
                         {/* Hover scrim with name */}
@@ -969,13 +969,13 @@ export default function ProductDetail() {
             >
               Follow Us{" "}
               <a
-                href="https://www.instagram.com/MakeWin"
+                href="https://www.instagram.com/Makewin"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline transition-all"
                 style={{ color: "var(--olive)", opacity: 0.65 }}
               >
-                @MakeWin
+                @Makewin
               </a>
             </h2>
             <ReelCarousel reels={globalReels} />

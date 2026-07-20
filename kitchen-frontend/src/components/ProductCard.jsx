@@ -36,7 +36,7 @@ function ProductCard({ product, compact = false, catalogue = false }) {
             <div className="aspect-square w-full flex items-center justify-center bg-cream">
               <img
                 src="/logo.png"
-                alt="MakeWin Logo"
+                alt="Makewin Logo"
                 className="w-16 h-16 object-contain opacity-40"
               />
             </div>
@@ -126,7 +126,7 @@ function ProductCard({ product, compact = false, catalogue = false }) {
           />
         ) : (
           <div className="aspect-[4/5] w-full flex items-center justify-center bg-cream">
-            <img src="/logo.png" alt="MakeWin Logo" className="w-24 h-24 object-contain opacity-50" />
+            <img src="/logo.png" alt="Makewin Logo" className="w-24 h-24 object-contain opacity-50" />
           </div>
         )}
       </div>

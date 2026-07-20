@@ -59,25 +59,7 @@ app.set("headersTimeout", 66000); // 66 seconds (must be > keepAliveTimeout)
 
 // CORS configuration
 
-// Allow larger JSON payloads (e.g. product form data); multipart file size is limited by Multer and by proxy
 app.use(express.json({ limit: "100mb" }));
-
-// Handle Multer "file too large" so we return JSON with CORS headers instead of generic 413
-app.use((err, req, res, next) => {
-  if (err && err.code === "LIMIT_FILE_SIZE") {
-    const origin = req.headers.origin;
-    const allowedOrigin = getAllowedOrigin(origin);
-    if (allowedOrigin) {
-      res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-      res.setHeader("Access-Control-Allow-Credentials", "true");
-    }
-    return res.status(413).json({
-      error: "File too large",
-      message: "Image or video exceeds the maximum allowed size (100MB per file). Use smaller files or compress images."
-    });
-  }
-  next(err);
-});
 
 // Request logging middleware removed (no console.log noise)
 
@@ -161,6 +143,8 @@ app.use("/instagram", instagramRoutes);
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", {
     message: err.message,
+    code: err.code,
+    name: err.name,
     stack: err.stack,
     path: req.path,
     method: req.method,
@@ -176,8 +160,25 @@ app.use((err, req, res, next) => {
     res.setHeader("Access-Control-Allow-Credentials", "true");
   }
 
+  // Multer file size limit
+  if (err.code === "LIMIT_FILE_SIZE") {
+    return res.status(413).json({
+      error: "File too large",
+      message: "File exceeds the maximum allowed size. Use a smaller file or compress it."
+    });
+  }
+
+  // Multer unexpected field / filter rejection
+  if (err.name === "MulterError" || /only .* files are allowed|file type|not allowed/i.test(err.message || "")) {
+    return res.status(400).json({
+      error: err.message || "Invalid file upload",
+      message: err.message || "Invalid file upload"
+    });
+  }
+
   res.status(err.status || 500).json({
     error: err.message || "Internal server error",
+    message: err.message || "Internal server error",
     ...(process.env.NODE_ENV === "development" && { stack: err.stack })
   });
 });

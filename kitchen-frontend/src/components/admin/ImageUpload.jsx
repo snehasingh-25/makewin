@@ -18,7 +18,16 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const IMAGE_MAX = 10;
-const MAX_SIZE_MB = 5;
+const MAX_SIZE_MB = 50;
+
+const IMAGE_EXT_RE = /\.(jpe?g|png|gif|webp|avif|bmp|svg|tiff?|heic|heif|ico|jfif)$/i;
+
+function isAcceptableImageFile(file) {
+  if (!file) return false;
+  if (file.type && file.type.startsWith("image/")) return true;
+  // Some formats (HEIC etc.) report empty or octet-stream mime
+  return IMAGE_EXT_RE.test(file.name || "");
+}
 
 // Stable id for new files (one-time when added)
 function makeNewId() {
@@ -138,9 +147,7 @@ export default function ImageUpload({
       setDragActive(false);
       if (!canAdd) return;
       if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        const newFiles = Array.from(e.dataTransfer.files).filter((f) =>
-          f.type.startsWith("image/")
-        );
+        const newFiles = Array.from(e.dataTransfer.files).filter(isAcceptableImageFile);
         const toAdd = newFiles.slice(0, IMAGE_MAX - items.length).map((file) => ({
           type: "new",
           id: makeNewId(),
@@ -156,9 +163,7 @@ export default function ImageUpload({
   const handleChange = useCallback(
     (e) => {
       if (!e.target.files?.length || !canAdd) return;
-      const newFiles = Array.from(e.target.files).filter((f) =>
-        f.type.startsWith("image/")
-      );
+      const newFiles = Array.from(e.target.files).filter(isAcceptableImageFile);
       const toAdd = newFiles.slice(0, IMAGE_MAX - items.length).map((file) => ({
         type: "new",
         id: makeNewId(),
@@ -255,7 +260,7 @@ export default function ImageUpload({
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*"
+            accept="image/*,.heic,.heif,.avif,.tif,.tiff,.bmp,.svg,.ico,.jfif"
             onChange={handleChange}
             className="hidden"
           />
@@ -271,7 +276,7 @@ export default function ImageUpload({
             </button>
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            JPG, PNG, WebP · max {MAX_SIZE_MB}MB each
+            JPG, PNG, WebP, HEIC, AVIF and other image formats · max {MAX_SIZE_MB}MB each
           </p>
         </div>
       )}
@@ -291,7 +296,7 @@ export default function ImageUpload({
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*"
+            accept="image/*,.heic,.heif,.avif,.tif,.tiff,.bmp,.svg,.ico,.jfif"
             onChange={handleChange}
             className="hidden"
           />
@@ -307,7 +312,7 @@ export default function ImageUpload({
             </button>
           </p>
           <p className="text-sm text-gray-500">
-            JPG, PNG, WebP · max {MAX_SIZE_MB}MB each · first image = featured
+            JPG, PNG, WebP, HEIC, AVIF and other image formats · max {MAX_SIZE_MB}MB each · first image = featured
           </p>
         </div>
       )}

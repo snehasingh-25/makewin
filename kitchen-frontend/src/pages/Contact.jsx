@@ -199,14 +199,14 @@ export default function Contact() {
             </p>
 
             <p
-              className="font-semibold text-sm leading-snug"
+              className="font-sans font-semibold text-sm leading-snug tabular-nums"
               style={{ color: "var(--olive)" }}
             >
               {primary}
             </p>
 
             <p
-              className="text-xs mt-1 leading-snug"
+              className="font-sans text-xs mt-1 leading-snug tabular-nums"
               style={{ color: "oklch(55% .02 340)" }}
             >
               {secondary}
@@ -429,7 +429,7 @@ export default function Contact() {
               className="text-[10px] tracking-[0.3em] uppercase font-medium mb-3"
               style={{ color: "oklch(55% .02 340)" }}
             >
-              Our Studio
+              Company Studio
             </p>
             <div
               className="w-8 h-px mb-8"

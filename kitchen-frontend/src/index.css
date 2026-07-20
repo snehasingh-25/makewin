@@ -132,6 +132,10 @@
     font-family: var(--font-display);
   }
 
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
   /* Smooth transitions for interactive elements */
   a,
   button,

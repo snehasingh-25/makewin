@@ -87,6 +87,58 @@ export default function DownloadCenter() {
     return `${API}${path}`;
   };
 
+  const buildDownloadFilename = (item) => {
+    const rawTitle = (item?.title || "download").trim() || "download";
+    const safeTitle = rawTitle.replace(/[^\w\s.-]+/g, "").replace(/\s+/g, "_");
+    const fromUrl = (item?.fileUrl || "").split("?")[0].split("/").pop() || "";
+    const urlExt = fromUrl.includes(".") ? fromUrl.split(".").pop() : "";
+    const typeExt = (item?.fileType || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const ext = (urlExt || typeExt || "pdf").replace(/^\./, "");
+    if (safeTitle.toLowerCase().endsWith(`.${ext.toLowerCase()}`)) return safeTitle;
+    return `${safeTitle}.${ext}`;
+  };
+
+  /** Force a real file download (works for Cloudinary + local /uploads). */
+  const startFileDownload = async (item) => {
+    const url = resolveFileUrl(item?.fileUrl);
+    if (!url) return;
+
+    const filename = buildDownloadFilename(item);
+
+    // Cloudinary: plain fl_attachment forces download.
+    // Do NOT append :filename.ext — dots in the name break Cloudinary transforms (400).
+    if (url.includes("res.cloudinary.com") && url.includes("/upload/")) {
+      const attachmentUrl = url.replace("/upload/", "/upload/fl_attachment/");
+      const a = document.createElement("a");
+      a.href = attachmentUrl;
+      a.setAttribute("download", filename);
+      a.rel = "noopener";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      return;
+    }
+
+    try {
+      const res = await fetch(url, { mode: "cors" });
+      if (!res.ok) throw new Error(`Download failed (${res.status})`);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+    } catch (err) {
+      console.error("Download error:", err);
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   // Group items by category
   const photosAndVideos = useMemo(() => downloads.filter((d) => d.category === "photos"), [downloads]);
   const technicalSpecs = useMemo(() => downloads.filter((d) => d.category === "specs"), [downloads]);
@@ -385,17 +437,15 @@ export default function DownloadCenter() {
                         {d.subcategory || "Asset"} · {d.fileType} · {d.fileSize}
                       </p>
                     </div>
-                    <a
+                    <button
+                      type="button"
                       data-testid={`download-photo-pv-${d.id}`}
-                      href={resolveFileUrl(d.fileUrl)}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      onClick={() => startFileDownload(d)}
                       aria-label={`Download ${d.title}`}
-                      className="shrink-0 w-11 h-11 border border-[#1A1B18] flex items-center justify-center text-[#1A1B18] transition-all duration-300 hover:bg-[#1A1B18] hover:text-[#FDFBF7]"
+                      className="shrink-0 w-11 h-11 border border-[#1A1B18] flex items-center justify-center text-[#1A1B18] transition-all duration-300 hover:bg-[#1A1B18] hover:text-[#FDFBF7] cursor-pointer bg-transparent"
                     >
                       <FiDownload className="w-4 h-4" />
-                    </a>
+                    </button>
                   </div>
                 </article>
               );
@@ -473,17 +523,15 @@ export default function DownloadCenter() {
                   <span className="hidden md:inline font-body text-sm text-[#5C5C56] min-w-[64px] text-right">
                     {d.fileSize}
                   </span>
-                  <a
+                  <button
+                    type="button"
                     data-testid={`download-spec-sp-${d.id}`}
-                    href={resolveFileUrl(d.fileUrl)}
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-none py-2 rounded-none h-11 px-4 md:px-5 border border-[#1A1B18] tag-pill text-[#1A1B18] hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors duration-300"
+                    onClick={() => startFileDownload(d)}
+                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-none py-2 rounded-none h-11 px-4 md:px-5 border border-[#1A1B18] tag-pill text-[#1A1B18] hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors duration-300 cursor-pointer bg-transparent"
                   >
                     <FiDownload className="mr-1 w-3.5 h-3.5" />
                     Download
-                  </a>
+                  </button>
                 </li>
               );
             })}
@@ -569,17 +617,15 @@ export default function DownloadCenter() {
 
                   {/* Bottom action bar */}
                   <div className="flex items-center gap-3 pt-2">
-                    <a
+                    <button
+                      type="button"
                       data-testid={`download-catalogue-cat-${d.id}`}
-                      href={resolveFileUrl(d.fileUrl)}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-none shadow py-2 rounded-none h-11 px-5 bg-[#1A1B18] text-[#FDFBF7] tag-pill hover:bg-[#C25E4A] hover:text-[#FDFBF7] transition-colors duration-300"
+                      onClick={() => startFileDownload(d)}
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-none shadow py-2 rounded-none h-11 px-5 bg-[#1A1B18] text-[#FDFBF7] tag-pill hover:bg-[#C25E4A] hover:text-[#FDFBF7] transition-colors duration-300 cursor-pointer border-0"
                     >
                       <FiDownload className="mr-1 w-3.5 h-3.5" />
                       Download
-                    </a>
+                    </button>
                     <button
                       data-testid={`preview-catalogue-text-cat-${d.id}`}
                       onClick={() => handleOpenPreview(d)}

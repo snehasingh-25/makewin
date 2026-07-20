@@ -182,7 +182,7 @@ export default function InfiniteScrollCarousel({
                   <img src={item.imageUrl} alt={item?.name ?? ""} className={`w-full h-full object-cover ${mediaInnerRounding}`} />
                 ) : (
                   <div className={`w-full h-full ${mediaInnerRounding} flex items-center justify-center overflow-hidden`} style={{ backgroundColor: "var(--primary)" }}>
-                    <img src="/logo.png" alt="MakeWin Logo" className="w-3/4 h-3/4 object-contain" />
+                    <img src="/logo.png" alt="Makewin Logo" className="w-3/4 h-3/4 object-contain" />
                   </div>
                 )}
               </div>

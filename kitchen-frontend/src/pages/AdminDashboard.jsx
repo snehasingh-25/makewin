@@ -167,9 +167,9 @@ export default function AdminDashboard() {
       <aside className="hidden lg:flex lg:flex-col w-72 bg-cream border-r border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="MakeWin" className="h-6 w-auto" />
+            <img src="/logo.png" alt="Makewin" className="h-6 w-auto" />
             <div>
-              <div className="text-sm font-semibold text-gray-900">MakeWin</div>
+              <div className="text-sm font-semibold text-gray-900">Makewin</div>
               <div className="text-xs text-gray-600 truncate max-w-[14rem]">{user?.email}</div>
             </div>
           </div>
