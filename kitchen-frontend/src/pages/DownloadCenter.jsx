@@ -98,44 +98,38 @@ export default function DownloadCenter() {
     return `${safeTitle}.${ext}`;
   };
 
-  /** Force a real file download (works for Cloudinary + local /uploads). */
+  /** Force a real file download via backend proxy (handles Cloudinary raw/PDF 401). */
   const startFileDownload = async (item) => {
-    const url = resolveFileUrl(item?.fileUrl);
-    if (!url) return;
+    if (!item?.id) return;
 
     const filename = buildDownloadFilename(item);
-
-    // Cloudinary: plain fl_attachment forces download.
-    // Do NOT append :filename.ext — dots in the name break Cloudinary transforms (400).
-    if (url.includes("res.cloudinary.com") && url.includes("/upload/")) {
-      const attachmentUrl = url.replace("/upload/", "/upload/fl_attachment/");
-      const a = document.createElement("a");
-      a.href = attachmentUrl;
-      a.setAttribute("download", filename);
-      a.rel = "noopener";
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      return;
-    }
+    const proxyUrl = `${API}/downloads/file/${item.id}`;
 
     try {
-      const res = await fetch(url, { mode: "cors" });
+      const res = await fetch(proxyUrl, { mode: "cors" });
       if (!res.ok) throw new Error(`Download failed (${res.status})`);
+
       const blob = await res.blob();
       const objectUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = objectUrl;
       a.download = filename;
+      a.rel = "noopener";
       a.style.display = "none";
       document.body.appendChild(a);
       a.click();
       a.remove();
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 1500);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
     } catch (err) {
       console.error("Download error:", err);
-      window.open(url, "_blank", "noopener,noreferrer");
+      // Last resort: navigate to proxy so Content-Disposition can still trigger save
+      const a = document.createElement("a");
+      a.href = proxyUrl;
+      a.rel = "noopener";
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
     }
   };
 

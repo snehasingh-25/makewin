@@ -1,9 +1,31 @@
 import express from "express";
+import { fileURLToPath } from "url";
+import { dirname, join, basename } from "path";
+import fs from "fs";
 import { verifyToken } from "../utils/auth.js";
-import { uploadDownloadFiles, getImageUrl, getDownloadFileUrl } from "../utils/upload.js";
+import {
+  uploadDownloadFiles,
+  getImageUrl,
+  getDownloadFileUrl,
+  resolveDownloadFetchUrl,
+} from "../utils/upload.js";
 import prisma from "../prisma.js";
 
 const router = express.Router();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const uploadsDir = join(__dirname, "../uploads");
+
+function safeDownloadFilename(download) {
+  const rawTitle = (download?.title || "download").trim() || "download";
+  const safeTitle = rawTitle.replace(/[^\w\s.-]+/g, "").replace(/\s+/g, "_");
+  const fromUrl = (download?.fileUrl || "").split("?")[0].split("/").pop() || "";
+  const urlExt = fromUrl.includes(".") ? fromUrl.split(".").pop() : "";
+  const typeExt = (download?.fileType || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const ext = (urlExt || typeExt || "bin").replace(/^\./, "");
+  if (safeTitle.toLowerCase().endsWith(`.${ext.toLowerCase()}`)) return safeTitle;
+  return `${safeTitle}.${ext}`;
+}
 
 // Helper to format bytes to human readable sizes
 function formatBytes(bytes, decimals = 1) {
@@ -57,7 +79,61 @@ router.get("/all", verifyToken, async (req, res) => {
   }
 });
 
-// 3. GET /:id - Get single download record (Admin only)
+// 3. GET /file/:id - Stream file with Content-Disposition: attachment (Public)
+// Must stay above /:id so "file" is not treated as an id.
+router.get("/file/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) {
+      return res.status(400).json({ error: "Invalid download id" });
+    }
+
+    const download = await prisma.download.findUnique({ where: { id } });
+    if (!download?.fileUrl) {
+      return res.status(404).json({ error: "Download not found" });
+    }
+
+    const filename = safeDownloadFilename(download);
+    const resolved = resolveDownloadFetchUrl(download.fileUrl, { attachment: true });
+
+    if (!resolved) {
+      return res.status(404).json({ error: "File URL missing" });
+    }
+
+    if (resolved.kind === "local") {
+      const localName = basename(resolved.path);
+      const localPath = join(uploadsDir, localName);
+      if (!fs.existsSync(localPath)) {
+        return res.status(404).json({ error: "Local file not found" });
+      }
+      return res.download(localPath, filename);
+    }
+
+    const upstream = await fetch(resolved.url);
+    if (!upstream.ok) {
+      console.error("Download proxy upstream failed:", upstream.status, download.fileUrl);
+      return res.status(502).json({ error: `Could not fetch file (${upstream.status})` });
+    }
+
+    const contentType =
+      upstream.headers.get("content-type") || "application/octet-stream";
+    res.setHeader("Content-Type", contentType);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename.replace(/"/g, "")}"`
+    );
+    const len = upstream.headers.get("content-length");
+    if (len) res.setHeader("Content-Length", len);
+
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+    return res.status(200).send(buffer);
+  } catch (error) {
+    console.error("Download file proxy error:", error);
+    res.status(500).json({ error: error.message || "Download failed" });
+  }
+});
+
+// 4. GET /:id - Get single download record (Admin only)
 router.get("/:id", verifyToken, async (req, res) => {
   try {
     const download = await prisma.download.findUnique({

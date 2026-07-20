@@ -193,9 +193,19 @@ export default function DownloadForm({ download, onSave, onCancel }) {
       removeCover();
       initialSnapshotRef.current = "";
     } catch (error) {
+      const data = error.response?.data;
+      const fromBody =
+        typeof data === "string"
+          ? data.replace(/<[^>]+>/g, " ").trim().slice(0, 180)
+          : data?.error || data?.message;
       const errorMsg =
-        error.response?.data?.error ||
-        error.response?.data?.message ||
+        fromBody ||
+        (error.response?.status === 413
+          ? "File too large for the server. Try a smaller PDF or ask to raise the upload limit."
+          : null) ||
+        (error.response?.status
+          ? `Upload failed (${error.response.status})`
+          : null) ||
         error.message ||
         "Failed to save download asset";
       toast.error(errorMsg);

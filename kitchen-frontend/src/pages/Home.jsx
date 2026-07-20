@@ -49,6 +49,10 @@ export default function Home() {
   const [loading, setLoading] = useState({ reels: true });
 
   useEffect(() => {
+    document.title = "Makewin | Aluminium Modular Kitchens";
+  }, []);
+
+  useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -278,7 +282,7 @@ export default function Home() {
           S4 — FACTORY
           Two columns: image left, text + 3 trust indicators right.
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 pb-28 sm:pb-36 lg:pb-44">
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 pb-14 sm:pb-[4.5rem] lg:pb-[5.5rem]">
         {/*
           Mobile:  heading (1) → image (2) → description (3)
           Desktop: image left col (1) | heading + description right col (2)
@@ -335,7 +339,7 @@ export default function Home() {
           S5 — EXPERIENCE CENTRE
           Dark. Large cinematic image. Minimal copy. Strong CTA.
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-24 sm:pt-32 lg:pt-40 pb-8 sm:pb-10">
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-12 sm:pt-16 lg:pt-20 pb-8 sm:pb-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-end mb-14 lg:mb-18">
 
           <FadeUp>

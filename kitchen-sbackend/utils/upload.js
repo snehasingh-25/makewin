@@ -82,24 +82,34 @@ function isDownloadFile(file) {
   const mime = (file.mimetype || "").toLowerCase();
   const ext = getExt(file.originalname);
 
+  // Trust known extensions first — browsers often send blank/octet-stream for PDF/ZIP/DOC
+  if (DOWNLOAD_EXTS.has(ext)) return true;
+
   if (isImageFile(file) || isVideoFile(file)) return true;
 
   const allowedMimes = new Set([
     "application/pdf",
     "application/x-pdf",
     "application/acrobat",
+    "applications/vnd.pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     "application/zip",
     "application/x-zip-compressed",
     "application/x-rar-compressed",
     "application/vnd.rar",
-    "application/octet-stream", // allow when extension is trusted
+    "application/x-7z-compressed",
+    "application/octet-stream",
+    "binary/octet-stream",
+    "application/force-download",
+    "application/x-download",
   ]);
 
-  if (allowedMimes.has(mime) && DOWNLOAD_EXTS.has(ext)) return true;
-  if (DOWNLOAD_EXTS.has(ext)) return true;
-  return false;
+  return allowedMimes.has(mime);
 }
 
 const storage = multer.diskStorage({
@@ -231,7 +241,7 @@ export const getVideoUrl = async (file) => {
 };
 
 // Combined upload for Download assets (PDF, DOC, ZIP, MP4) + optional Cover Image
-export const uploadDownloadFiles = multer({
+const downloadMulter = multer({
   storage,
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB per file
@@ -243,8 +253,7 @@ export const uploadDownloadFiles = multer({
       cb(
         new Error(
           `File type "${file.mimetype || "unknown"}" (${file.originalname}) is not allowed. Upload PDF, DOC, DOCX, ZIP, video, or any image format.`
-        ),
-        false
+        )
       );
     }
   },
@@ -253,34 +262,137 @@ export const uploadDownloadFiles = multer({
   { name: "coverImage", maxCount: 1 },
 ]);
 
+/** Multer wrapper — always returns JSON errors (avoids opaque "Failed to save" toasts). */
+export const uploadDownloadFiles = (req, res, next) => {
+  downloadMulter(req, res, (err) => {
+    if (!err) return next();
+
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(413).json({
+        error: "File too large (max 100MB)",
+        message: "File too large (max 100MB)",
+      });
+    }
+
+    const message = err.message || "Invalid file upload";
+    return res.status(400).json({ error: message, message });
+  });
+};
+
 // Helper function to upload any asset (PDF, ZIP, DOC, MP4) to Cloudinary or return local path
 export const getDownloadFileUrl = async (file) => {
   if (cloudinaryConfig) {
-    try {
-      let resourceType = "raw"; // raw for PDF, ZIP, DOC
-      if (isImageFile(file)) {
-        resourceType = "image";
-      } else if (isVideoFile(file)) {
-        resourceType = "video";
+    const attempts = [];
+    if (isImageFile(file)) attempts.push("image");
+    else if (isVideoFile(file)) attempts.push("video");
+    else attempts.push("raw", "auto");
+
+    let lastError = null;
+    for (const resourceType of attempts) {
+      try {
+        const uploadOptions = {
+          folder: "ecommerce",
+          resource_type: resourceType,
+          use_filename: true,
+          unique_filename: true,
+          filename_override: file.originalname || undefined,
+        };
+        if (resourceType === "image") {
+          uploadOptions.quality = "auto";
+        }
+
+        const result = await cloudinary.uploader.upload(file.path, uploadOptions);
+        try {
+          fs.unlinkSync(file.path);
+        } catch {
+          /* already removed */
+        }
+        return result.secure_url;
+      } catch (error) {
+        lastError = error;
+        console.error(
+          `Cloudinary download upload (${resourceType}) failed:`,
+          error?.message || error
+        );
       }
-
-      const uploadOptions = {
-        folder: "ecommerce",
-        resource_type: resourceType,
-      };
-
-      // Keep original for documents; optimize images only
-      if (resourceType === "image") {
-        uploadOptions.quality = "auto";
-      }
-
-      const result = await cloudinary.uploader.upload(file.path, uploadOptions);
-      fs.unlinkSync(file.path);
-      return result.secure_url;
-    } catch (error) {
-      console.error("Cloudinary download file upload error:", error?.message || error);
-      // Fall through to local
     }
+    console.error("Cloudinary download file upload error:", lastError?.message || lastError);
+    // Fall through to local
   }
   return `/uploads/${file.filename}`;
 };
+
+/** Parse a Cloudinary delivery URL into resource_type + public_id. */
+export function parseCloudinaryUrl(fileUrl) {
+  try {
+    const u = new URL(fileUrl);
+    if (!u.hostname.includes("res.cloudinary.com")) return null;
+
+    const parts = u.pathname.split("/").filter(Boolean);
+    // /{cloud}/{resourceType}/{type}/[transforms/]/v123/{publicId}
+    if (parts.length < 4) return null;
+
+    const resourceType = parts[1]; // image | video | raw
+    const deliveryType = parts[2]; // upload
+    if (!["image", "video", "raw"].includes(resourceType) || deliveryType !== "upload") {
+      return null;
+    }
+
+    const afterType = parts.slice(3);
+    const versionIdx = afterType.findIndex((p) => /^v\d+$/.test(p));
+    const publicId = (versionIdx >= 0 ? afterType.slice(versionIdx + 1) : afterType).join("/");
+    if (!publicId) return null;
+
+    return { resourceType, deliveryType, publicId };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resolve a fetchable URL for a stored download asset.
+ * Public Cloudinary raw/PDF delivery is often blocked (401) — use signed private download.
+ */
+export function resolveDownloadFetchUrl(fileUrl, { attachment = true } = {}) {
+  if (!fileUrl) return null;
+
+  if (fileUrl.startsWith("/uploads/")) {
+    return { kind: "local", path: fileUrl };
+  }
+
+  const parsed = parseCloudinaryUrl(fileUrl);
+  if (parsed && cloudinaryConfig) {
+    // Raw public_id usually includes the extension (e.g. folder/file.pdf)
+    let publicId = parsed.publicId;
+    let format = "";
+
+    if (parsed.resourceType !== "raw") {
+      const slash = publicId.lastIndexOf("/");
+      const name = slash >= 0 ? publicId.slice(slash + 1) : publicId;
+      const dot = name.lastIndexOf(".");
+      if (dot > 0) {
+        format = name.slice(dot + 1);
+        publicId = publicId.slice(0, publicId.length - format.length - 1);
+      }
+    }
+
+    try {
+      const signed = cloudinary.utils.private_download_url(publicId, format || undefined, {
+        resource_type: parsed.resourceType,
+        type: parsed.deliveryType || "upload",
+        attachment: !!attachment,
+        expires_at: Math.floor(Date.now() / 1000) + 15 * 60,
+      });
+      return { kind: "remote", url: signed };
+    } catch (err) {
+      console.error("Cloudinary signed download URL failed:", err?.message || err);
+    }
+  }
+
+  // Public image URLs: force attachment when possible
+  if (fileUrl.includes("res.cloudinary.com") && fileUrl.includes("/upload/") && !fileUrl.includes("fl_attachment")) {
+    return { kind: "remote", url: fileUrl.replace("/upload/", "/upload/fl_attachment/") };
+  }
+
+  return { kind: "remote", url: fileUrl };
+}
