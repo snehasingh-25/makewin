@@ -32,6 +32,7 @@ export default function VideoUpload({ videos, existingVideos, onVideosChange, on
         file.type.startsWith("video/")
       );
       onVideosChange([...videos, ...newFiles]);
+      e.target.value = "";
     }
   };
 

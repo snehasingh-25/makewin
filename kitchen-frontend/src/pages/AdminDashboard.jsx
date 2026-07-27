@@ -8,8 +8,8 @@ import CategoryForm from "../components/admin/CategoryForm";
 import ProductList from "../components/admin/ProductList";
 import CategoryList from "../components/admin/CategoryList";
 import MessageList from "../components/admin/MessageList";
-import ReelForm from "../components/admin/ReelForm";
-import ReelList from "../components/admin/ReelList";
+// import ReelForm from "../components/admin/ReelForm"; // REELS DISABLED
+// import ReelList from "../components/admin/ReelList"; // REELS DISABLED
 // import BannerForm from "../components/admin/BannerForm"; // BANNERS DISABLED
 // import BannerList from "../components/admin/BannerList"; // BANNERS DISABLED
 import AdminSearchBar from "../components/admin/AdminSearchBar";
@@ -27,14 +27,14 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [reels, setReels] = useState([]);
+  // const [reels, setReels] = useState([]); // REELS DISABLED
   // const [banners, setBanners] = useState([]); // BANNERS DISABLED
   const [dealers, setDealers] = useState([]);
   const [downloads, setDownloads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [editingReel, setEditingReel] = useState(null);
+  // const [editingReel, setEditingReel] = useState(null); // REELS DISABLED
   // const [editingBanner, setEditingBanner] = useState(null); // BANNERS DISABLED
   const [editingDealer, setEditingDealer] = useState(null);
   const [editingDownload, setEditingDownload] = useState(null);
@@ -71,9 +71,10 @@ export default function AdminDashboard() {
       } else if (activeTab === "messages") {
         const res = await axios.get("/contact");
         setMessages(res.data);
-      } else if (activeTab === "reels") {
-        const res = await axios.get("/reels/all");
-        setReels(res.data);
+      // REELS DISABLED
+      // } else if (activeTab === "reels") {
+      //   const res = await axios.get("/reels/all");
+      //   setReels(res.data);
       // BANNERS DISABLED
       // } else if (activeTab === "banners") {
       //   const res = await axios.get("/banners/all");
@@ -135,10 +136,11 @@ export default function AdminDashboard() {
 
 
 
-  const handleReelSave = () => {
-    setEditingReel(null);
-    loadData();
-  };
+  // REELS DISABLED
+  // const handleReelSave = () => {
+  //   setEditingReel(null);
+  //   loadData();
+  // };
 
   // BANNERS DISABLED
   // const handleBannerSave = () => {
@@ -155,7 +157,7 @@ export default function AdminDashboard() {
     { id: "products", label: "Products", icon: null },
     { id: "categories", label: "Categories", icon: null },
     // { id: "banners", label: "Banners", icon: null }, // BANNERS DISABLED
-    { id: "reels", label: "Reels", icon: null },
+    // { id: "reels", label: "Reels", icon: null }, // REELS DISABLED
     { id: "dealers", label: "Dealers", icon: null },
     { id: "downloads", label: "Downloads", icon: null },
     { id: "messages", label: "Messages", icon: null },
@@ -183,7 +185,7 @@ export default function AdminDashboard() {
                 setActiveTab(tab.id);
                 setEditingProduct(null);
                 setEditingCategory(null);
-                setEditingReel(null);
+                // setEditingReel(null); // REELS DISABLED
                 // setEditingBanner(null); // BANNERS DISABLED
                 setEditingDealer(null);
                 setEditingDownload(null);
@@ -297,7 +299,7 @@ export default function AdminDashboard() {
                       setActiveTab(tab.id);
                       setEditingProduct(null);
                       setEditingCategory(null);
-                      setEditingReel(null);
+                      // setEditingReel(null); // REELS DISABLED
                       // setEditingBanner(null); // BANNERS DISABLED
                       setEditingDealer(null);
                       setEditingDownload(null);
@@ -425,7 +427,8 @@ export default function AdminDashboard() {
 
 
 
-              {activeTab === "reels" && (
+              {/* REELS DISABLED */}
+              {/* {activeTab === "reels" && (
                 <div>
                   <ReelForm
                     reel={editingReel}
@@ -438,7 +441,7 @@ export default function AdminDashboard() {
                     onDelete={loadData}
                   />
                 </div>
-              )}
+              )} */}
 
               {activeTab === "messages" && (
                 <MessageList messages={messages} onUpdate={loadData} />

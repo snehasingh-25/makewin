@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import http from "http";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
@@ -27,6 +28,9 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:5174",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:5174",
   "https://makewin.in",
   "https://www.makewin.in"
 ];
@@ -203,27 +207,34 @@ process.on("uncaughtException", (error) => {
   // Don't exit immediately, let the server try to handle it
 });
 
-// Create HTTP server with keep-alive enabled
-let server;
-try {
-  server = app.listen(PORT, HOST, () => {
-    const actualPort = server.address().port;
-    const actualAddress = server.address().address;
-    void actualPort;
-    void actualAddress;
-  });
+// Create HTTP server with keep-alive enabled.
+// Register error handler BEFORE listen so EADDRINUSE exits cleanly
+// instead of leaving a zombie process that never accepts connections.
+const server = http.createServer(app);
+server.keepAliveTimeout = 65000; // 65 seconds
+server.headersTimeout = 66000; // 66 seconds
 
-  server.on("error", (error) => {
-    console.error("=== Server Error ===");
-    console.error("Error code:", error.code);
-    console.error("Error message:", error.message);
-    if (error.code === "EADDRINUSE") {
-      console.error(`✗ Port ${PORT} is already in use`);
-      console.error("Please stop the process using this port or change the PORT environment variable");
+server.on("error", (error) => {
+  console.error("=== Server Error ===");
+  console.error("Error code:", error.code);
+  console.error("Error message:", error.message);
+  if (error.code === "EADDRINUSE") {
+    console.error(`✗ Port ${PORT} is already in use`);
+    console.error("Please stop the process using this port or change the PORT environment variable");
+  } else {
+    console.error("Full error:", error);
+  }
+  process.exit(1);
+});
+
+try {
+  server.listen(PORT, HOST, () => {
+    const addr = server.address();
+    if (addr && typeof addr === "object") {
+      console.log(`Server listening on http://${addr.address}:${addr.port}`);
     } else {
-      console.error("Full error:", error);
+      console.log(`Server listening on ${HOST}:${PORT}`);
     }
-    process.exit(1);
   });
 } catch (error) {
   console.error("=== Failed to Start Server ===");
@@ -231,10 +242,6 @@ try {
   console.error("Stack:", error.stack);
   process.exit(1);
 }
-
-// Enable keep-alive on the server
-server.keepAliveTimeout = 65000; // 65 seconds
-server.headersTimeout = 66000; // 66 seconds
 
 // Graceful shutdown
 process.on("SIGTERM", async () => {

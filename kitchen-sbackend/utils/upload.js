@@ -240,6 +240,51 @@ export const getVideoUrl = async (file) => {
   return `/uploads/${file.filename}`;
 };
 
+/** Download-section videos: same reliable upload as reels, with chunked upload for large files. */
+async function uploadDownloadVideo(file) {
+  const size =
+    file.size ||
+    (() => {
+      try {
+        return fs.statSync(file.path).size;
+      } catch {
+        return 0;
+      }
+    })();
+
+  if (!cloudinaryConfig) {
+    return `/uploads/${file.filename}`;
+  }
+
+  const options = {
+    folder: "ecommerce",
+    resource_type: "video",
+  };
+
+  try {
+    const result =
+      size > 20 * 1024 * 1024
+        ? await cloudinary.uploader.upload_large(file.path, {
+            ...options,
+            chunk_size: 6_000_000,
+          })
+        : await cloudinary.uploader.upload(file.path, options);
+
+    try {
+      fs.unlinkSync(file.path);
+    } catch {
+      /* already removed */
+    }
+
+    return result.secure_url;
+  } catch (error) {
+    console.error("Download video Cloudinary upload error:", error?.message || error);
+    throw new Error(
+      "Video upload failed. Use MP4/MOV under 100MB, or compress the file and try again."
+    );
+  }
+}
+
 // Combined upload for Download assets (PDF, DOC, ZIP, MP4) + optional Cover Image
 const downloadMulter = multer({
   storage,
@@ -281,10 +326,14 @@ export const uploadDownloadFiles = (req, res, next) => {
 
 // Helper function to upload any asset (PDF, ZIP, DOC, MP4) to Cloudinary or return local path
 export const getDownloadFileUrl = async (file) => {
+  // Videos: dedicated path (chunked upload for large files). Images/PDFs unchanged below.
+  if (isVideoFile(file)) {
+    return uploadDownloadVideo(file);
+  }
+
   if (cloudinaryConfig) {
     const attempts = [];
     if (isImageFile(file)) attempts.push("image");
-    else if (isVideoFile(file)) attempts.push("video");
     else attempts.push("raw", "auto");
 
     let lastError = null;

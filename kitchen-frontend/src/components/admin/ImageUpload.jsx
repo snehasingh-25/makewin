@@ -251,7 +251,7 @@ export default function ImageUpload({
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-xl p-6 text-center transition ${dragActive
+          className={`border-2 border-dashed rounded-xl text-center transition ${items.length === 0 ? "p-8" : "p-6"} ${dragActive
             ? "border-olive bg-tan/20"
             : "border-gray-300 hover:border-olive bg-gray-50"
             }`}
@@ -264,55 +264,20 @@ export default function ImageUpload({
             onChange={handleChange}
             className="hidden"
           />
-          <div className="text-3xl mb-2">📸</div>
-          <p className="text-gray-600 text-sm">
-            Drag images here or{" "}
+          <div className={items.length === 0 ? "text-4xl mb-3" : "text-3xl mb-2"}>📸</div>
+          <p className={`text-gray-600 ${items.length === 0 ? "mb-2" : "text-sm"}`}>
+            {items.length === 0 ? "Drag and drop images here, or " : "Drag more images here or "}
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-olive hover:text-olive underline font-medium"
+              className={`text-olive hover:text-olive underline ${items.length === 0 ? "font-semibold" : "font-medium"}`}
             >
               browse
             </button>
           </p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className={`text-gray-500 ${items.length === 0 ? "text-sm" : "text-xs mt-1"}`}>
             JPG, PNG, WebP, HEIC, AVIF and other image formats · max {MAX_SIZE_MB}MB each
-          </p>
-        </div>
-      )}
-
-      {items.length === 0 && (
-        <div
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-xl p-8 text-center transition ${dragActive
-            ? "border-olive bg-tan/20"
-            : "border-gray-300 hover:border-olive bg-gray-50"
-            }`}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*,.heic,.heif,.avif,.tif,.tiff,.bmp,.svg,.ico,.jfif"
-            onChange={handleChange}
-            className="hidden"
-          />
-          <div className="text-4xl mb-3">📸</div>
-          <p className="text-gray-600 mb-2">
-            Drag and drop images here, or{" "}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="text-olive hover:text-olive underline font-semibold"
-            >
-              browse
-            </button>
-          </p>
-          <p className="text-sm text-gray-500">
-            JPG, PNG, WebP, HEIC, AVIF and other image formats · max {MAX_SIZE_MB}MB each · first image = featured
+            {items.length === 0 ? " · first image = featured" : ""}
           </p>
         </div>
       )}

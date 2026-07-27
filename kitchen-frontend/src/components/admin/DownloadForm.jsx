@@ -434,7 +434,7 @@ export default function DownloadForm({ download, onSave, onCancel }) {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept=".pdf,.doc,.docx,.zip,.rar,.mp4,.mov,image/*,.heic,.heif,.avif"
+                accept=".pdf,.doc,.docx,.zip,.rar,video/*,.mp4,.mov,.webm,.mkv,.avi,.m4v,image/*,.heic,.heif,.avif"
                 onChange={handleFileChange}
                 className="hidden"
               />
