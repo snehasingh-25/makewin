@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FiDownload, FiSearch, FiEye, FiChevronDown, FiX, FiFileText, FiPlay, FiBookOpen } from "react-icons/fi";
 import axios, { API } from "../api";
+import { toPlayableVideoUrl } from "../utils/videoUrl";
 
 export default function DownloadCenter() {
   const [downloads, setDownloads] = useState([]);
@@ -87,6 +88,8 @@ export default function DownloadCenter() {
     return `${API}${path}`;
   };
 
+  const resolvePlayableVideoUrl = (path) => toPlayableVideoUrl(resolveFileUrl(path));
+
   const buildDownloadFilename = (item) => {
     const rawTitle = (item?.title || "download").trim() || "download";
     const safeTitle = rawTitle.replace(/[^\w\s.-]+/g, "").replace(/\s+/g, "_");
@@ -137,11 +140,6 @@ export default function DownloadCenter() {
   const photosAndVideos = useMemo(() => downloads.filter((d) => d.category === "photos"), [downloads]);
   const technicalSpecs = useMemo(() => downloads.filter((d) => d.category === "specs"), [downloads]);
   const catalogues = useMemo(() => downloads.filter((d) => d.category === "catalogues"), [downloads]);
-
-  // Dynamic stat counts
-  const assetCount = String(photosAndVideos.length).padStart(2, "0");
-  const docCount = String(technicalSpecs.length).padStart(2, "0");
-  const catCount = String(catalogues.length).padStart(2, "0");
 
   // Get unique subcategories/categories for Photos filters
   const photoCategories = useMemo(() => {
@@ -237,34 +235,16 @@ export default function DownloadCenter() {
 
       {/* Hero Section */}
       <section className="px-6 md:px-12 lg:px-20 pt-10 pb-10 border-b border-[rgba(135, 185, 35, 0.15)]">
-        <div className="grid lg:grid-cols-12 gap-10 items-end">
-          <div className="lg:col-span-8">
-            <h1 className="font-heading font-light text-[#1A1B18] text-5xl sm:text-6xl lg:text-7xl xl:text-[88px] leading-[0.95] tracking-tight">
-              Download Center
-            </h1>
-             <p className="font-body text-base md:text-lg leading-relaxed text-[#1A1B18]">
-              Access and download our latest{" "}
-              <span className="ink-link text-[#C25E4A]" onClick={() => scrollToSection("photos")}>Photos &amp; Videos</span>,{" "}
-              <span className="ink-link text-[#C25E4A]" onClick={() => scrollToSection("specs")}>Technical Specifications</span>, and{" "}
-              <span className="ink-link text-[#C25E4A]" onClick={() => scrollToSection("catalogues")}>Product Catalogues</span>.
-            </p>
-          </div>
-          <div className="lg:col-span-4">
-            <div className="mt-8 grid grid-cols-3 gap-4 border-t border-[rgba(26,27,24,0.15)] pt-6">
-              <div>
-                <div className="font-heading text-3xl md:text-4xl font-light text-[#1A1B18]">{assetCount}</div>
-                <div className="tag-pill text-[#5C5C56] mt-1">Assets</div>
-              </div>
-              <div>
-                <div className="font-heading text-3xl md:text-4xl font-light text-[#1A1B18]">{docCount}</div>
-                <div className="tag-pill text-[#5C5C56] mt-1">Documents</div>
-              </div>
-              <div>
-                <div className="font-heading text-3xl md:text-4xl font-light text-[#1A1B18]">{catCount}</div>
-                <div className="tag-pill text-[#5C5C56] mt-1">Catalogues</div>
-              </div>
-            </div>
-          </div>
+        <div className="max-w-3xl">
+          <h1 className="font-heading font-light text-[#1A1B18] text-5xl sm:text-6xl lg:text-7xl xl:text-[88px] leading-[0.95] tracking-tight">
+            Download Center
+          </h1>
+          <p className="font-body text-base md:text-lg leading-relaxed text-[#1A1B18]">
+            Access and download our latest{" "}
+            <span className="ink-link text-[#C25E4A]" onClick={() => scrollToSection("photos")}>Photos &amp; Videos</span>,{" "}
+            <span className="ink-link text-[#C25E4A]" onClick={() => scrollToSection("specs")}>Technical Specifications</span>, and{" "}
+            <span className="ink-link text-[#C25E4A]" onClick={() => scrollToSection("catalogues")}>Product Catalogues</span>.
+          </p>
         </div>
       </section>
 
@@ -410,7 +390,7 @@ export default function DownloadCenter() {
                     {/* Play Video Trigger */}
                     {isVideo && (
                       <button
-                        onClick={() => setActiveVideoUrl(resolveFileUrl(d.fileUrl))}
+                        onClick={() => setActiveVideoUrl(resolvePlayableVideoUrl(d.fileUrl))}
                         className="absolute inset-0 flex items-center justify-center cursor-pointer group/play"
                         aria-label="Play video"
                       >
@@ -668,9 +648,15 @@ export default function DownloadCenter() {
           </button>
           <div className="w-full max-w-4xl aspect-video bg-black overflow-hidden relative shadow-2xl">
             <video
+              key={activeVideoUrl}
               src={activeVideoUrl}
               controls
               autoPlay
+              muted
+              playsInline
+              preload="metadata"
+              webkit-playsinline="true"
+              x5-playsinline="true"
               className="w-full h-full object-contain"
             />
           </div>

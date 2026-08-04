@@ -163,6 +163,7 @@ export default function Home() {
         <div className="absolute inset-0 overflow-hidden" style={{ backgroundColor: "#000" }}>
           <video
             ref={heroVideoRef}
+            key="home-hero-20260804"
             className="absolute inset-0 z-0 w-full h-full object-cover object-center"
             autoPlay
             muted
@@ -171,7 +172,7 @@ export default function Home() {
             preload="auto"
             aria-hidden="true"
           >
-            <source src="/home-hero.mp4?v=20260720" type="video/mp4" />
+            <source src="/home-hero-20260804.mp4" type="video/mp4" />
           </video>
           <div
             className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-t from-black/70 via-black/30 to-black/10"
@@ -226,8 +227,8 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
           {[
             { label: "Modular Kitchen\nin Aluminium", link: "/category/kitchen", img: "/home-product-1.png", alt: "Makewin Modular Kitchen" },
-            { label: "Wardrobes\nin Aluminium", link: "/category/q", img: "/about-wardrobes.png", alt: "Makewin Wardrobes" },
-            { label: "Doors\nin Aluminium", link: "/categories#products", img: "/home-image-3.png", alt: "Makewin Doors in Aluminium" },
+            { label: "Wardrobes\nin Aluminium", link: "/category/Wardrobe", img: "/about-wardrobes.png", alt: "Makewin Wardrobes" },
+            { label: "Doors\nin Aluminium", link: "/category/Door", img: "/home-image-3.png", alt: "Makewin Doors in Aluminium" },
           ].map(({ label, link, img, alt }, i) => (
             <FadeUp key={label} delay={i * 110} className="w-full">
               <Link

@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "../api";
 import { MemoReelCarousel as ReelCarousel } from "../components/ReelCarousel";
-import { FiChevronLeft, FiChevronRight, FiPlay } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { toPlayableVideoUrl } from "../utils/videoUrl";
 
 // ─── Editorial constants ───────────────────────────────────────────────────
 
@@ -35,6 +36,15 @@ const SWATCHES = [
   { color: "oklch(93% 0.02 80)", name: "Warm Beige", sub: "Cabinet Finish" },
   { color: "oklch(55% 0.06 68)", name: "Brushed Brass", sub: "Hardware" },
 ];
+
+/** Singular product noun for copy — kitchen only for kitchen category. */
+function productTypeLabel(category) {
+  const raw = `${category?.slug || ""} ${category?.name || ""}`.toLowerCase();
+  if (raw.includes("wardrobe")) return "wardrobe";
+  if (raw.includes("door")) return "door";
+  if (raw.includes("kitchen")) return "kitchen";
+  return "piece";
+}
 
 // ─── Shimmer keyframes (injected once) ────────────────────────────────────
 
@@ -286,6 +296,7 @@ export default function ProductDetail() {
     ? `— ${category.name.toUpperCase()}`
     : "— COLLECTION";
 
+  const typeLabel = productTypeLabel(category);
   const galleryImages = images; // pure image URLs for editorial sections
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -357,26 +368,15 @@ export default function ProductDetail() {
               {activeMedia?.type === "video" ? (
                 <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                   <video
-                    src={activeMedia.url}
+                    key={activeMedia.url}
+                    src={toPlayableVideoUrl(activeMedia.url)}
                     className="absolute inset-0 w-full h-full object-contain bg-black"
                     controls
                     playsInline
                     preload="metadata"
+                    webkit-playsinline="true"
+                    x5-playsinline="true"
                   />
-                  {/* Play video overlay (shows before controls visible) */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <div
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold tracking-widest uppercase"
-                      style={{
-                        backgroundColor: "rgba(0,0,0,0.45)",
-                        color: "#fff",
-                        backdropFilter: "blur(4px)",
-                      }}
-                    >
-                      <FiPlay size={12} />
-                      Play Video
-                    </div>
-                  </div>
                 </div>
               ) : activeMedia?.type === "image" ? (
                 <div className="relative w-full" style={{ paddingBottom: "100%" }}>
@@ -471,11 +471,12 @@ export default function ProductDetail() {
                     >
                       {item.type === "video" ? (
                         <video
-                          src={item.url}
+                          src={toPlayableVideoUrl(item.url)}
                           className="w-full h-full object-cover"
                           muted
                           playsInline
                           preload="metadata"
+                          webkit-playsinline="true"
                         />
                       ) : (
                         <img
@@ -530,7 +531,6 @@ export default function ProductDetail() {
                 { label: "Collection", value: category?.name ?? "Signature" },
                 { label: "Design Language", value: "Warm Minimal" },
                 { label: "Material", value: "Premium Aluminium" },
-                { label: "Application", value: "Modular Kitchen" },
               ].map(({ label, value }) => (
                 <div key={label} className="flex items-baseline justify-between gap-4">
                   <span
@@ -671,7 +671,7 @@ export default function ProductDetail() {
                 style={{ color: "oklch(45% .02 340)", maxWidth: "55ch" }}
               >
                 <p>
-                  Every Makewin kitchen begins with a single question: how can a space feel
+                  Every Makewin {typeLabel} begins with a single question: how can a space feel
                   both effortless and extraordinary? The answer lies in the precision of our
                   aluminium framework — engineered for a lifetime, finished to feel timeless.
                 </p>
@@ -681,7 +681,7 @@ export default function ProductDetail() {
                     : "Our design language draws from the warmth of natural materials — the grain of oak, the cool weight of quartz, the subtle sheen of brushed brass — and translates them into surfaces that are as practical as they are beautiful."}
                 </p>
                 <p>
-                  The result is a kitchen that tells a story: of considered choices, skilled
+                  The result is a {typeLabel} that tells a story: of considered choices, skilled
                   hands, and spaces designed to be lived in — not merely admired.
                 </p>
               </div>
