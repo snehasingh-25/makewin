@@ -82,7 +82,7 @@ export default function Footer() {
             <div>
               <p
                 className="text-[9px] tracking-[0.28em] uppercase mb-4 font-medium"
-                style={{ color: "oklch(50% .02 80)" }}
+                style={{ color: "var(--ink)" }}
               >
                 Follow Us
               </p>

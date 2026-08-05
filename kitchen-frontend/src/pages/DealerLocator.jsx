@@ -53,7 +53,7 @@ export default function DealerLocator() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-cream py-16 px-4">
+      <div className="min-h-screen bg-cream py-8 px-4">
         <style>{`
           @keyframes sk-sweep {
             0%   { background-position: -600px 0; }
@@ -65,7 +65,7 @@ export default function DealerLocator() {
             animation: sk-sweep 1.5s ease-in-out infinite;
           }
         `}</style>
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-24">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-4">
           <div className="sk h-4 w-24 mb-4 rounded" />
           <div className="sk h-10 w-64 mb-12 rounded" />
           <div className="sk h-14 w-full mb-8 rounded" />
@@ -91,7 +91,7 @@ export default function DealerLocator() {
   return (
     <div className="min-h-screen bg-cream pb-24">
       {/* Header */}
-      <section className="pt-40 pb-10 mx-auto max-w-7xl px-6 lg:px-12">
+      <section className="pt-6 sm:pt-8 pb-6 mx-auto max-w-7xl px-6 lg:px-12">
         <p className="text-[11px] tracking-[0.35em] uppercase text-olive-dark">Find us</p>
         <h1 className="font-display text-5xl md:text-6xl mt-4">
           Dealer <span className="font-script italic text-olive-dark">locator</span>

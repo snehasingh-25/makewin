@@ -21,7 +21,7 @@ import DownloadCenter from "./pages/DownloadCenter";
 import DealerLocator from "./pages/DealerLocator";
 
 // Pages with full-screen hero images — navbar overlays them, no spacer needed
-const HERO_ROUTES = new Set(["/", "/shop", "/about"]);
+const HERO_ROUTES = new Set(["/", "/shop"]);
 
 function PublicLayout() {
   const location = useLocation();
@@ -31,7 +31,7 @@ function PublicLayout() {
     <>
       <Navbar />
       {/* Spacer for fixed navbar on non-hero pages */}
-      {needsSpacer && <div style={{ height: "4.75rem" }} />}
+      {needsSpacer && <div aria-hidden="true" style={{ height: "var(--navbar-height)" }} />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Home />} />

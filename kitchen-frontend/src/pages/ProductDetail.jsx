@@ -30,13 +30,6 @@ const HIGHLIGHTS = [
   },
 ];
 
-const SWATCHES = [
-  { color: "oklch(72% 0.08 68)", name: "Natural Oak", sub: "Wood Finish" },
-  { color: "oklch(88% 0.01 240)", name: "Premium Quartz", sub: "Countertop" },
-  { color: "oklch(93% 0.02 80)", name: "Warm Beige", sub: "Cabinet Finish" },
-  { color: "oklch(55% 0.06 68)", name: "Brushed Brass", sub: "Hardware" },
-];
-
 /** Singular product noun for copy — kitchen only for kitchen category. */
 function productTypeLabel(category) {
   const raw = `${category?.slug || ""} ${category?.name || ""}`.toLowerCase();
@@ -44,6 +37,21 @@ function productTypeLabel(category) {
   if (raw.includes("door")) return "door";
   if (raw.includes("kitchen")) return "kitchen";
   return "piece";
+}
+
+function ProductBackButton({ onClick, className = "mb-4" }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Go back to previous page"
+      className={`inline-flex items-center gap-1.5 text-xs tracking-[0.15em] uppercase transition-opacity hover:opacity-70 ${className}`}
+      style={{ color: "var(--olive)" }}
+    >
+      <FiChevronLeft size={18} aria-hidden />
+      Back
+    </button>
+  );
 }
 
 // ─── Shimmer keyframes (injected once) ────────────────────────────────────
@@ -65,6 +73,14 @@ const SHIMMER_CSS = `
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const goBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate("/categories");
+  };
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -183,6 +199,7 @@ export default function ProductDetail() {
       <div className="min-h-screen bg-cream">
         <style>{SHIMMER_CSS}</style>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-24">
+          <ProductBackButton onClick={goBack} className="mb-6" />
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-10">
             {[10, 3, 14, 3, 28].map((w, i) => (
@@ -248,6 +265,14 @@ export default function ProductDetail() {
               <div className="flex items-center justify-center gap-4">
                 <button
                   type="button"
+                  onClick={goBack}
+                  className="px-5 py-2 rounded-xl text-sm font-semibold border transition-opacity hover:opacity-80"
+                  style={{ borderColor: "var(--olive)", color: "var(--olive)" }}
+                >
+                  Go back
+                </button>
+                <button
+                  type="button"
                   onClick={() => window.location.reload()}
                   className="px-5 py-2 rounded-xl text-sm font-semibold transition-opacity hover:opacity-80"
                   style={{ backgroundColor: "var(--olive)", color: "#fff" }}
@@ -271,13 +296,23 @@ export default function ProductDetail() {
               >
                 Product not found
               </p>
-              <Link
-                to="/"
-                className="text-sm hover:underline"
-                style={{ color: "var(--olive)" }}
-              >
-                Return home
-              </Link>
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  type="button"
+                  onClick={goBack}
+                  className="text-sm font-semibold hover:underline"
+                  style={{ color: "var(--olive)" }}
+                >
+                  Go back
+                </button>
+                <Link
+                  to="/"
+                  className="text-sm hover:underline"
+                  style={{ color: "oklch(40% .02 340)" }}
+                >
+                  Return home
+                </Link>
+              </div>
             </>
           )}
         </div>
@@ -309,6 +344,7 @@ export default function ProductDetail() {
           BREADCRUMB
       ════════════════════════════════════════════════════════════════ */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <ProductBackButton onClick={goBack} />
         <nav>
           <ol
             className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs tracking-wide"
@@ -728,47 +764,6 @@ export default function ProductDetail() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════
-          SECTION 2: MATERIAL PALETTE
-      ════════════════════════════════════════════════════════════════ */}
-      <section className="py-28 bg-cream">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p
-            className="text-xs tracking-[0.3em] uppercase text-center mb-14 font-medium"
-            style={{ color: "oklch(55% .02 340)" }}
-          >
-            Material Palette
-          </p>
-          <div className="flex flex-wrap justify-center gap-12 lg:gap-20">
-            {SWATCHES.map(({ color, name, sub }) => (
-              <div key={name} className="flex flex-col items-center gap-3">
-                <div
-                  className="w-20 h-20 rounded-full shadow-sm ring-1 ring-inset"
-                  style={{
-                    backgroundColor: color,
-                    ringColor: "rgba(0,0,0,0.06)",
-                  }}
-                />
-                <div className="text-center">
-                  <p
-                    className="font-semibold text-sm"
-                    style={{ color: "var(--olive)" }}
-                  >
-                    {name}
-                  </p>
-                  <p
-                    className="text-xs mt-0.5"
-                    style={{ color: "oklch(55% .02 340)" }}
-                  >
-                    {sub}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════════
           SECTION 3: DESIGN GALLERY
       ════════════════════════════════════════════════════════════════ */}
       {galleryImages.length >= 1 && (
@@ -965,7 +960,7 @@ export default function ProductDetail() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2
               className="font-display text-2xl text-center mb-8"
-              style={{ color: "var(--olive)" }}
+              style={{ color: "var(--ink)" }}
             >
               Follow Us{" "}
               <a

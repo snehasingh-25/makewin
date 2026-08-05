@@ -86,6 +86,9 @@
   --scrollbar-track: var(--cream);
   --scrollbar-thumb: var(--secondary);
   --scrollbar-thumb-hover: var(--secondary-dark);
+
+  /* Fixed navbar clearance for page content */
+  --navbar-height: 5.75rem;
 }
 
 @font-face {
@@ -233,6 +236,10 @@ body {
   -ms-overflow-style: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+html {
+  scroll-padding-top: var(--navbar-height);
 }
 
 html::-webkit-scrollbar,

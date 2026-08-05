@@ -100,7 +100,7 @@ export default function About() {
       {/* ══════════════════════════════════════════════════════════
           S2 — ABOUT COMPANY
       ══════════════════════════════════════════════════════════ */}
-      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-20 sm:pt-28 lg:pt-36 pb-16 sm:pb-20 lg:pb-28">
+      <section className="bg-cream px-8 sm:px-14 lg:px-20 pt-8 sm:pt-12 lg:pt-28 pb-16 sm:pb-20 lg:pb-28">
 
         {/* Section label + editorial title */}
         <FadeUp delay={0}>

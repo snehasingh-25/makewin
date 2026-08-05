@@ -3,9 +3,23 @@ import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import axios from "../api";
 import ProductCard from "../components/ProductCard";
 import ProductListing from "../components/ProductListing";
-import { shuffleArray } from "../utils/shuffle";
 
 const SK_STYLE = `@keyframes sk-sweep{0%{background-position:-600px 0}100%{background-position:600px 0}}.sk{background:linear-gradient(90deg,oklch(93% .03 340) 25%,oklch(96% .02 340) 50%,oklch(93% .03 340) 75%);background-size:1200px 100%;animation:sk-sweep 1.5s ease-in-out infinite}`;
+
+function getProductCategorySlugs(product) {
+  const cats = Array.isArray(product.categories) ? product.categories : [];
+  return cats
+    .map((c) => c.slug || c.category?.slug)
+    .filter(Boolean);
+}
+
+function sortProducts(products) {
+  return [...products].sort((a, b) => {
+    const orderDiff = (a.order ?? 0) - (b.order ?? 0);
+    if (orderDiff !== 0) return orderDiff;
+    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+  });
+}
 
 function parseImages(raw) {
   if (!raw) return [];
@@ -20,10 +34,10 @@ function CategoryFilteredView({ slug, categories }) {
 
   return (
     <div className="min-h-screen bg-cream">
-      <div className="px-6 sm:px-10 lg:px-16 pt-10 pb-4">
+      <div className="px-6 sm:px-10 lg:px-16 pt-4 sm:pt-6 pb-3">
         <button
           onClick={() => navigate("/categories")}
-          className="flex items-center gap-2 text-xs tracking-[0.15em] uppercase mb-8 transition-opacity hover:opacity-70"
+          className="flex items-center gap-2 text-xs tracking-[0.15em] uppercase mb-4 transition-opacity hover:opacity-70"
           style={{ color: "var(--olive)" }}
         >
           ← Back to Catalogue
@@ -41,7 +55,7 @@ function CategoryFilteredView({ slug, categories }) {
         )}
       </div>
 
-      <div className="px-6 sm:px-10 lg:px-16 py-8">
+      <div className="px-6 sm:px-10 lg:px-16 py-6">
         <ProductListing
           initialFilters={{ category: slug }}
           showFilters={false}
@@ -89,12 +103,12 @@ export default function CategoriesPage() {
       // Fetch everything in parallel for the main catalogue page
       Promise.all([
         axios.get("/categories", { signal: ac.signal }),
-        axios.get("/products", { signal: ac.signal }),
+        axios.get("/products?shuffle=false", { signal: ac.signal }),
         // axios.get("/banners?type=primary", { signal: ac.signal }), // BANNERS DISABLED
       ])
         .then(([catsRes, prodsRes /* , bannersRes */]) => {
           setCategories(Array.isArray(catsRes.data) ? catsRes.data : []);
-          setAllProducts(shuffleArray(Array.isArray(prodsRes.data) ? prodsRes.data : []));
+          setAllProducts(Array.isArray(prodsRes.data) ? prodsRes.data : []);
           // const banners = Array.isArray(bannersRes.data) ? bannersRes.data : [];
           // setHeroBanner(banners[0] || null);
           setLoading(false);
@@ -110,14 +124,44 @@ export default function CategoriesPage() {
   const categoryCountMap = useMemo(() => {
     const map = {};
     allProducts.forEach((p) => {
-      const cats = Array.isArray(p.categories) ? p.categories : [];
-      cats.forEach((c) => {
-        const s = c.slug || c.category?.slug;
-        if (s) map[s] = (map[s] || 0) + 1;
+      getProductCategorySlugs(p).forEach((slug) => {
+        map[slug] = (map[slug] || 0) + 1;
       });
     });
     return map;
   }, [allProducts]);
+
+  const productsByCategory = useMemo(() => {
+    const usedProductIds = new Set();
+
+    const grouped = categories
+      .map((category) => {
+        const products = sortProducts(
+          allProducts.filter((product) => {
+            if (usedProductIds.has(product.id)) return false;
+            return getProductCategorySlugs(product).includes(category.slug);
+          })
+        );
+
+        products.forEach((product) => usedProductIds.add(product.id));
+
+        return { category, products };
+      })
+      .filter((group) => group.products.length > 0);
+
+    const uncategorized = sortProducts(
+      allProducts.filter((product) => !usedProductIds.has(product.id))
+    );
+
+    if (uncategorized.length > 0) {
+      grouped.push({
+        category: { id: "other", slug: "other", name: "Other" },
+        products: uncategorized,
+      });
+    }
+
+    return grouped;
+  }, [categories, allProducts]);
 
 
   // Hero image: fall back to first product image (banners disabled)
@@ -134,7 +178,7 @@ export default function CategoriesPage() {
       <div className="min-h-screen bg-cream">
         <style>{SK_STYLE}</style>
         {/* Hero skeleton */}
-        <div className="grid md:grid-cols-2" style={{ minHeight: "70vh" }}>
+        <div className="grid md:grid-cols-2" style={{ minHeight: "auto" }}>
           <div className="p-12 flex flex-col justify-center gap-5">
             <div className="sk h-3 w-28 rounded" />
             <div className="sk h-12 w-3/4 rounded" />
@@ -180,10 +224,10 @@ export default function CategoriesPage() {
     <div className="min-h-screen bg-cream">
 
       {/* ── Section 1: Hero ──────────────────────────────────────────────── */}
-      <section className="grid md:grid-cols-2 overflow-hidden" style={{ minHeight: "70vh" }}>
+      <section className="grid md:grid-cols-2 overflow-hidden md:min-h-[55vh] lg:min-h-[62vh]">
         {/* Left: text */}
         <div
-          className="flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-20 py-16 bg-cream order-2 md:order-1"
+          className="flex flex-col justify-start md:justify-center px-8 sm:px-12 lg:px-16 xl:px-20 pt-6 pb-10 sm:pt-8 md:py-12 bg-cream order-2 md:order-1"
         >
           <p
             className="text-[10px] tracking-[0.25em] uppercase mb-5"
@@ -208,7 +252,7 @@ export default function CategoriesPage() {
         </div>
 
         {/* Right: image */}
-        <div className="relative order-1 md:order-2 overflow-hidden" style={{ minHeight: "55vw", maxHeight: "100vh" }}>
+        <div className="relative order-1 md:order-2 overflow-hidden min-h-[220px] sm:min-h-[280px] md:min-h-full">
           <img
             src="/products-hero.png"
             alt="Makewin Modular Kitchen — full feature view"
@@ -219,7 +263,7 @@ export default function CategoriesPage() {
 
       {/* ── Section 2: Categories ─────────────────────────────────────────── */}
       {categories.length > 0 && (
-        <section className="px-6 sm:px-10 lg:px-16 xl:px-20 py-16 lg:py-20">
+        <section className="px-6 sm:px-10 lg:px-16 xl:px-20 py-10 lg:py-14">
           {/* Header row */}
           <div className="flex items-end justify-between mb-8 sm:mb-10">
             <div>
@@ -296,8 +340,8 @@ export default function CategoriesPage() {
         </section>
       )}
 
-      {allProducts.length > 0 && (
-        <section id="products" className="px-6 sm:px-10 lg:px-16 xl:px-20 pb-12 lg:pb-16">
+      {productsByCategory.length > 0 && (
+        <section id="products" className="px-6 sm:px-10 lg:px-16 xl:px-20 pb-8 lg:pb-12">
           <div className="mb-8 sm:mb-10">
             <h2
               className="font-display text-3xl sm:text-4xl lg:text-5xl"
@@ -307,9 +351,33 @@ export default function CategoriesPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            {allProducts.map((product) => (
-              <ProductCard key={product.id} product={product} catalogue />
+          <div className="space-y-12 lg:space-y-16">
+            {productsByCategory.map(({ category, products }) => (
+              <div key={category.slug || category.id}>
+                <div className="flex items-end justify-between gap-4 mb-6 sm:mb-8">
+                  <h3
+                    className="font-display text-2xl sm:text-3xl lg:text-4xl"
+                    style={{ color: "var(--ink)" }}
+                  >
+                    {category.name}
+                  </h3>
+                  {category.slug !== "other" && (
+                    <Link
+                      to={`/category/${category.slug}`}
+                      className="shrink-0 text-[10px] sm:text-xs tracking-[0.18em] uppercase transition-opacity hover:opacity-70"
+                      style={{ color: "var(--olive)" }}
+                    >
+                      View all →
+                    </Link>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                  {products.map((product) => (
+                    <ProductCard key={product.id} product={product} catalogue />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </section>

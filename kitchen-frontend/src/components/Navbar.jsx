@@ -10,7 +10,7 @@ const NAV_LINKS = [
   { path: "/contact", label: "Contact" },
 ];
 
-const HERO_ROUTES = new Set(["/", "/shop", "/about"]);
+const HERO_ROUTES = new Set(["/", "/shop"]);
 
 export default function Navbar() {
   const location = useLocation();

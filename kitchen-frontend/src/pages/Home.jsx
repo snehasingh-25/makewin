@@ -44,7 +44,9 @@ function FadeUp({ children, delay = 0, className = "", threshold = 0.12 }) {
 
 export default function Home() {
   const heroVideoRef = useRef(null);
+  const isMutedRef = useRef(true);
   const [scrolled, setScrolled] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState({ reels: true });
 
@@ -65,12 +67,14 @@ export default function Home() {
     video.muted = true;
     video.defaultMuted = true;
     video.playsInline = true;
-    video.setAttribute("muted", "");
     video.setAttribute("playsinline", "");
     video.setAttribute("webkit-playsinline", "");
 
     const tryPlay = () => {
+      if (!isMutedRef.current) return;
+
       video.muted = true;
+      video.defaultMuted = true;
       if (video.paused) {
         video.play().catch(() => {});
       }
@@ -80,11 +84,7 @@ export default function Home() {
     video.addEventListener("loadeddata", tryPlay);
     video.addEventListener("canplay", tryPlay);
     video.addEventListener("canplaythrough", tryPlay);
-    video.addEventListener("suspend", tryPlay);
-    video.addEventListener("stalled", tryPlay);
-    video.addEventListener("pause", tryPlay);
 
-    // Keep playing even if the browser briefly pauses autoplay
     const watchdog = setInterval(tryPlay, 1500);
 
     return () => {
@@ -92,11 +92,40 @@ export default function Home() {
       video.removeEventListener("loadeddata", tryPlay);
       video.removeEventListener("canplay", tryPlay);
       video.removeEventListener("canplaythrough", tryPlay);
-      video.removeEventListener("suspend", tryPlay);
-      video.removeEventListener("stalled", tryPlay);
-      video.removeEventListener("pause", tryPlay);
     };
   }, []);
+
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+    const video = heroVideoRef.current;
+    if (!video) return;
+    video.muted = isMuted;
+    video.defaultMuted = isMuted;
+  }, [isMuted]);
+
+  const toggleMute = async () => {
+    const video = heroVideoRef.current;
+    if (!video) return;
+
+    if (isMutedRef.current) {
+      isMutedRef.current = false;
+      setIsMuted(false);
+      video.defaultMuted = false;
+      video.muted = false;
+      video.volume = 1;
+      try {
+        await video.play();
+      } catch {
+        // keep unmuted after explicit user tap even if play is blocked
+      }
+      return;
+    }
+
+    isMutedRef.current = true;
+    setIsMuted(true);
+    video.muted = true;
+    video.defaultMuted = true;
+  };
 
   useEffect(() => {
     const ac = new AbortController();
@@ -163,23 +192,42 @@ export default function Home() {
         <div className="absolute inset-0 overflow-hidden" style={{ backgroundColor: "#000" }}>
           <video
             ref={heroVideoRef}
-            key="home-hero-20260804"
+            key="home-hero-20260805"
             className="absolute inset-0 z-0 w-full h-full object-cover object-center"
             autoPlay
-            muted
             loop
             playsInline
-            preload="auto"
-            aria-hidden="true"
+            preload="metadata"
           >
-            <source src="/home-hero-20260804.mp4" type="video/mp4" />
+            <source src="/home-hero-20260805.mp4" type="video/mp4" />
           </video>
           <div
             className="absolute inset-0 z-[1] pointer-events-none bg-gradient-to-t from-black/70 via-black/30 to-black/10"
           />
         </div>
 
-        <div className="relative z-10 px-8 sm:px-14 lg:px-20 pb-10 sm:pb-12">
+        <button
+          type="button"
+          onClick={toggleMute}
+          aria-label={isMuted ? "Unmute video" : "Mute video"}
+          aria-pressed={!isMuted}
+          className="absolute bottom-16 left-1/2 -translate-x-1/2 z-[60] flex h-11 w-11 items-center justify-center rounded-full border border-white/25 bg-black/50 text-white backdrop-blur-sm transition hover:bg-black/65"
+        >
+          {isMuted ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M11 5L6 9H3v6h3l5 4V5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M16 9l4 4M20 9l-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M11 5L6 9H3v6h3l5 4V5z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+              <path d="M15.5 8.5a5 5 0 010 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M17.8 6.2a8 8 0 010 11.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          )}
+        </button>
+
+        <div className="relative z-10 px-8 sm:px-14 lg:px-20 pb-10 sm:pb-12 pointer-events-none">
           <h1
             className="font-display leading-[0.92] mb-5"
             style={{ fontSize: "clamp(2.75rem, 10vw, 7rem)", color: "white" }}
@@ -472,7 +520,7 @@ export default function Home() {
           <div className="px-1 sm:px-2 lg:px-4">
             <h2
               className="text-xl sm:text-2xl font-bold mb-6 text-center tracking-tight"
-              style={{ color: "var(--olive)" }}
+              style={{ color: "var(--ink)" }}
             >
               Follow Us{" "}
               <a

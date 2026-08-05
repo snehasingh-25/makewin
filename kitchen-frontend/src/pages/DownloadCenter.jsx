@@ -234,16 +234,16 @@ export default function DownloadCenter() {
       <section aria-label="Notifications alt+T" tabIndex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false" />
 
       {/* Hero Section */}
-      <section className="px-6 md:px-12 lg:px-20 pt-10 pb-10 border-b border-[rgba(135, 185, 35, 0.15)]">
+      <section className="px-6 md:px-12 lg:px-20 pt-6 sm:pt-8 pb-10 border-b border-[rgba(135, 185, 35, 0.15)]">
         <div className="max-w-3xl">
           <h1 className="font-heading font-light text-[#1A1B18] text-5xl sm:text-6xl lg:text-7xl xl:text-[88px] leading-[0.95] tracking-tight">
             Download Center
           </h1>
           <p className="font-body text-base md:text-lg leading-relaxed text-[#1A1B18]">
             Access and download our latest{" "}
-            <span className="ink-link text-[#C25E4A]" onClick={() => scrollToSection("photos")}>Photos &amp; Videos</span>,{" "}
-            <span className="ink-link text-[#C25E4A]" onClick={() => scrollToSection("specs")}>Technical Specifications</span>, and{" "}
-            <span className="ink-link text-[#C25E4A]" onClick={() => scrollToSection("catalogues")}>Product Catalogues</span>.
+            <span className="ink-link text-[#1A1B18]" onClick={() => scrollToSection("photos")}>Photos &amp; Videos</span>,{" "}
+            <span className="ink-link text-[#1A1B18]" onClick={() => scrollToSection("specs")}>Technical Specifications</span>, and{" "}
+            <span className="ink-link text-[#1A1B18]" onClick={() => scrollToSection("catalogues")}>Product Catalogues</span>.
           </p>
         </div>
       </section>

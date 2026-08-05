@@ -7,8 +7,8 @@ const PHONE = "+91 91661 66190";
 const PHONE_RAW = "919166166190";
 const EMAIL = "makewinglobal@gmail.com";
 const WHATSAPP_BOOK = `https://wa.me/${PHONE_RAW}?text=${encodeURIComponent("Hi! I'd like to book a consultation with Makewin.")}`;
-const MAPS_EMBED = "https://maps.google.com/maps?q=Near+Hormann+Door+Panna+Dhay+Circle+Azad+Nagar+Bhilwara+Rajasthan+311002&output=embed&hl=en";
-const MAPS_DIRECTIONS = "https://maps.google.com/?q=Near+Hormann+Door+Panna+Dhay+Circle+Azad+Nagar+Bhilwara+Rajasthan+311002";
+const MAPS_DIRECTIONS = "https://maps.app.goo.gl/qDyTkLQaV28CtTUs5";
+const MAPS_EMBED = "https://maps.google.com/maps?q=25.333970,74.618547&z=16&output=embed&hl=en";
 
 const PROJECT_TYPES = [
   "Modular Kitchen",
@@ -109,9 +109,9 @@ export default function Contact() {
       {/* ══════════════════════════════════════════════════════
           HERO — Split layout
       ══════════════════════════════════════════════════════ */}
-      <section className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] min-h-[520px]">
+      <section className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] min-h-0 lg:min-h-[520px]">
         {/* Left: editorial text */}
-        <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-16 xl:px-24 py-20 lg:py-28">
+        <div className="flex flex-col justify-start lg:justify-center px-8 sm:px-12 lg:px-16 xl:px-24 pt-8 pb-16 sm:pt-10 lg:py-28">
           <p
             className="text-xs tracking-[0.3em] uppercase font-medium mb-6"
             style={{ color: "oklch(55% .02 340)" }}
