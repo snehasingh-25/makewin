@@ -133,6 +133,66 @@ router.get("/file/:id", async (req, res) => {
   }
 });
 
+// Stream file inline with Content-Disposition: inline (Public, for PDF / doc preview)
+router.get("/view/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isFinite(id)) {
+      return res.status(400).json({ error: "Invalid download id" });
+    }
+
+    const download = await prisma.download.findUnique({ where: { id } });
+    if (!download?.fileUrl) {
+      return res.status(404).json({ error: "Download not found" });
+    }
+
+    const filename = safeDownloadFilename(download);
+    const resolved = resolveDownloadFetchUrl(download.fileUrl, { attachment: false });
+
+    if (!resolved) {
+      return res.status(404).json({ error: "File URL missing" });
+    }
+
+    if (resolved.kind === "local") {
+      const localName = basename(resolved.path);
+      const localPath = join(uploadsDir, localName);
+      if (!fs.existsSync(localPath)) {
+        return res.status(404).json({ error: "Local file not found" });
+      }
+      res.setHeader("Content-Disposition", `inline; filename="${filename.replace(/"/g, "")}"`);
+      if (filename.toLowerCase().endsWith(".pdf") || (download.fileType || "").toLowerCase() === "pdf") {
+        res.setHeader("Content-Type", "application/pdf");
+      }
+      return res.sendFile(localPath);
+    }
+
+    const upstream = await fetch(resolved.url);
+    if (!upstream.ok) {
+      console.error("View proxy upstream failed:", upstream.status, download.fileUrl);
+      return res.status(502).json({ error: `Could not fetch file (${upstream.status})` });
+    }
+
+    let contentType = upstream.headers.get("content-type") || "application/pdf";
+    if (filename.toLowerCase().endsWith(".pdf") || (download.fileType || "").toLowerCase() === "pdf") {
+      contentType = "application/pdf";
+    }
+
+    res.setHeader("Content-Type", contentType);
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${filename.replace(/"/g, "")}"`
+    );
+    const len = upstream.headers.get("content-length");
+    if (len) res.setHeader("Content-Length", len);
+
+    const buffer = Buffer.from(await upstream.arrayBuffer());
+    return res.status(200).send(buffer);
+  } catch (error) {
+    console.error("View file proxy error:", error);
+    res.status(500).json({ error: error.message || "View file failed" });
+  }
+});
+
 // 4. GET /:id - Get single download record (Admin only)
 router.get("/:id", verifyToken, async (req, res) => {
   try {

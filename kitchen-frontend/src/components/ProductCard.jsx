@@ -42,15 +42,6 @@ function ProductCard({ product, compact = false, catalogue = false }) {
             </div>
           )}
 
-          {/* Collection / category label at top-left */}
-          <div className="absolute top-3 left-3">
-            <span
-              className="text-[9px] tracking-[0.18em] uppercase px-2 py-1"
-              style={{ backgroundColor: "white", color: "var(--ink)" }}
-            >
-              {subtitle}
-            </span>
-          </div>
 
           {/* Heart / wishlist icon at top-right */}
           <button

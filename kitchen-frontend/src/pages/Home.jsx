@@ -34,7 +34,7 @@ function FadeUp({ children, delay = 0, className = "", threshold = 0.12 }) {
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(28px)",
         transition: `opacity 0.9s cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform 0.9s cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-        willChange: "opacity, transform",
+        willChange: visible ? "auto" : "opacity, transform",
       }}
     >
       {children}
@@ -85,7 +85,11 @@ export default function Home() {
     video.addEventListener("canplay", tryPlay);
     video.addEventListener("canplaythrough", tryPlay);
 
-    const watchdog = setInterval(tryPlay, 1500);
+    const watchdog = setInterval(() => {
+      if (video.paused) {
+        tryPlay();
+      }
+    }, 2500);
 
     return () => {
       clearInterval(watchdog);
@@ -162,7 +166,7 @@ export default function Home() {
   const isInitialLoad = loading.reels;
 
   return (
-    <div className="bg-cream overflow-x-hidden">
+    <div className="bg-cream overflow-x-clip max-w-full">
       <style>{`
         @keyframes chevron-bounce {
           0%, 100% { transform: translateY(0); opacity: 0.5; }
@@ -186,8 +190,8 @@ export default function Home() {
           Full-viewport dark section. Content anchored to bottom-left.
       ══════════════════════════════════════════════════════════ */}
       <section
-        className="relative w-full h-[89.1svh] flex flex-col justify-end overflow-hidden"
-        style={{ backgroundColor: "var(--ink)" }}
+        className="relative w-full min-h-[85vh] sm:min-h-[89svh] h-[89.1vh] flex flex-col justify-end overflow-hidden"
+        style={{ backgroundColor: "var(--ink)", touchAction: "pan-y" }}
       >
         <div className="absolute inset-0 overflow-hidden" style={{ backgroundColor: "#000" }}>
           <video

@@ -105,6 +105,8 @@
 
   html {
     scroll-behavior: smooth;
+    touch-action: manipulation;
+    -webkit-overflow-scrolling: touch;
   }
 
   body {
@@ -115,6 +117,8 @@
     letter-spacing: 0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+    overflow-x: clip;
   }
 
   h1,

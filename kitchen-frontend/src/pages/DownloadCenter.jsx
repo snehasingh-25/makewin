@@ -24,12 +24,12 @@ export default function DownloadCenter() {
     catalogues: useRef(null),
   };
 
-  // Lightbox Video Modal
+  // Modals state
   const [activeVideoUrl, setActiveVideoUrl] = useState(null);
-
-  // Catalogue Preview Modal
-  const [previewCatalogue, setPreviewCatalogue] = useState(null);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null);
   const [previewPage, setPreviewPage] = useState(1);
+  const [docViewMode, setDocViewMode] = useState("pdf"); // "pdf" or "book"
 
   useEffect(() => {
     axios.get("/downloads")
@@ -42,6 +42,30 @@ export default function DownloadCenter() {
         setLoading(false);
       });
   }, []);
+
+  // Lock body scroll and listen for Escape key when modals are open
+  useEffect(() => {
+    const isModalOpen = Boolean(activeVideoUrl || previewPhoto || previewDoc);
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setActiveVideoUrl(null);
+        setPreviewPhoto(null);
+        setPreviewDoc(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [activeVideoUrl, previewPhoto, previewDoc]);
 
   // Scroll spy detection
   useEffect(() => {
@@ -173,10 +197,14 @@ export default function DownloadCenter() {
     });
   }, [catalogues, searchCatalogues]);
 
-  // Mock document preview pages
-  const handleOpenPreview = (catalogue) => {
-    setPreviewCatalogue(catalogue);
+  // Document preview handler
+  const handleOpenDocumentPreview = (docItem) => {
+    setPreviewDoc(docItem);
     setPreviewPage(1);
+    const fileUrl = (docItem?.fileUrl || "").toLowerCase();
+    const fileType = (docItem?.fileType || "").toLowerCase();
+    const isPdf = fileType === "pdf" || fileUrl.endsWith(".pdf") || fileUrl.includes(".pdf?");
+    setDocViewMode(isPdf ? "pdf" : "book");
   };
 
   const previewPagesCount = 4;
@@ -241,9 +269,9 @@ export default function DownloadCenter() {
           </h1>
           <p className="font-body text-base md:text-lg leading-relaxed text-[#1A1B18]">
             Access and download our latest{" "}
-            <span className="ink-link text-[#1A1B18]" onClick={() => scrollToSection("photos")}>Photos &amp; Videos</span>,{" "}
-            <span className="ink-link text-[#1A1B18]" onClick={() => scrollToSection("specs")}>Technical Specifications</span>, and{" "}
-            <span className="ink-link text-[#1A1B18]" onClick={() => scrollToSection("catalogues")}>Product Catalogues</span>.
+            <span className="ink-link text-[#1A1B18] cursor-pointer" onClick={() => scrollToSection("photos")}>Photos &amp; Videos</span>,{" "}
+            <span className="ink-link text-[#1A1B18] cursor-pointer" onClick={() => scrollToSection("specs")}>Technical Specifications</span>, and{" "}
+            <span className="ink-link text-[#1A1B18] cursor-pointer" onClick={() => scrollToSection("catalogues")}>Product Catalogues</span>.
           </p>
         </div>
       </section>
@@ -310,7 +338,7 @@ export default function DownloadCenter() {
               <div className="tag-pill text-[#5C5C56] mb-4">01 · Visual Library</div>
               <h2 className="font-heading text-4xl md:text-5xl font-light leading-[1.05] text-[#1A1B18]">Photos &amp; Videos</h2>
               <p className="font-body mt-4 text-base md:text-lg text-[#5C5C56] leading-relaxed">
-                Studio-grade product imagery, brand assets and motion content — ready to publish across catalogues, web and retail.
+                Studio-grade product imagery, brand assets and motion content — ready to preview and download across catalogues, web and retail.
               </p>
             </div>
             
@@ -370,10 +398,10 @@ export default function DownloadCenter() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {filteredPhotos.map((d) => {
               const isVideo = d.fileType === "MP4" || d.fileType === "VIDEO" || (d.fileUrl && d.fileUrl.endsWith(".mp4"));
-              const coverImg = resolveImage(d.coverUrl, "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=800&q=80");
+              const coverImg = resolveImage(d.coverUrl || d.fileUrl, "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=800&q=80");
               return (
-                <article key={d.id} className="group relative lift overflow-hidden bg-[#F0EFEA] border border-[rgba(26,27,24,0.10)]">
-                  <div className="relative aspect-[4/3] w-full overflow-hidden">
+                <article key={d.id} className="group relative lift overflow-hidden bg-[#F0EFEA] border border-[rgba(26,27,24,0.10)] flex flex-col justify-between">
+                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-200">
                     <img
                       alt={d.title}
                       loading="lazy"
@@ -383,19 +411,30 @@ export default function DownloadCenter() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1A1B18]/55 via-[#1A1B18]/0 to-[#1A1B18]/10" />
                     
                     {/* Badge */}
-                    <span className="absolute top-4 left-4 tag-pill bg-[#FDFBF7] text-[#1A1B18] px-3 py-1.5 border border-[rgba(26,27,24,0.15)]">
+                    <span className="absolute top-4 left-4 tag-pill bg-[#FDFBF7] text-[#1A1B18] px-3 py-1.5 border border-[rgba(26,27,24,0.15)] z-10">
                       {isVideo ? "Video" : "Photo"}
                     </span>
 
-                    {/* Play Video Trigger */}
-                    {isVideo && (
+                    {/* Play Video Trigger or Photo Lightbox Trigger */}
+                    {isVideo ? (
                       <button
                         onClick={() => setActiveVideoUrl(resolvePlayableVideoUrl(d.fileUrl))}
-                        className="absolute inset-0 flex items-center justify-center cursor-pointer group/play"
+                        className="absolute inset-0 flex items-center justify-center cursor-pointer group/play z-10"
                         aria-label="Play video"
                       >
                         <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#FDFBF7]/95 flex items-center justify-center transition-transform duration-500 group-hover:scale-110 shadow-lg">
                           <FiPlay className="text-[#1A1B18] w-[22px] h-[22px] ml-0.5 fill-current" />
+                        </div>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setPreviewPhoto(d)}
+                        className="absolute inset-0 flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity duration-300 z-10"
+                        aria-label="Preview photo"
+                      >
+                        <div className="flex items-center gap-2 bg-[#FDFBF7] text-[#1A1B18] px-4 py-2 rounded-full font-heading text-xs uppercase tracking-wider shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                          <FiEye className="w-4 h-4" />
+                          <span>Preview Photo</span>
                         </div>
                       </button>
                     )}
@@ -408,18 +447,32 @@ export default function DownloadCenter() {
                         {d.title}
                       </h3>
                       <p className="font-body text-xs text-[#5C5C56] mt-2 tracking-wide">
-                        {d.subcategory || "Asset"} · {d.fileType} · {d.fileSize}
+                        {d.subcategory || "Asset"} · {d.fileType || "File"} · {d.fileSize || ""}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      data-testid={`download-photo-pv-${d.id}`}
-                      onClick={() => startFileDownload(d)}
-                      aria-label={`Download ${d.title}`}
-                      className="shrink-0 w-11 h-11 border border-[#1A1B18] flex items-center justify-center text-[#1A1B18] transition-all duration-300 hover:bg-[#1A1B18] hover:text-[#FDFBF7] cursor-pointer bg-transparent"
-                    >
-                      <FiDownload className="w-4 h-4" />
-                    </button>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {!isVideo && (
+                        <button
+                          type="button"
+                          data-testid={`preview-photo-pv-${d.id}`}
+                          onClick={() => setPreviewPhoto(d)}
+                          aria-label={`Preview ${d.title}`}
+                          className="w-11 h-11 border border-[rgba(26,27,24,0.2)] flex items-center justify-center text-[#1A1B18] transition-all duration-300 hover:bg-[#1A1B18] hover:text-[#FDFBF7] cursor-pointer bg-transparent"
+                        >
+                          <FiEye className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        data-testid={`download-photo-pv-${d.id}`}
+                        onClick={() => startFileDownload(d)}
+                        aria-label={`Download ${d.title}`}
+                        className="w-11 h-11 border border-[#1A1B18] flex items-center justify-center text-[#1A1B18] transition-all duration-300 hover:bg-[#1A1B18] hover:text-[#FDFBF7] cursor-pointer bg-transparent"
+                      >
+                        <FiDownload className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </article>
               );
@@ -444,7 +497,7 @@ export default function DownloadCenter() {
                 Technical Specifications
               </h2>
               <p className="font-body mt-4 text-base md:text-lg text-[#5C5C56] leading-relaxed">
-                Material, dimensional, fire-safety and installation documents. Verified, version-controlled, ready for procurement teams.
+                Material, dimensional, fire-safety and installation documents. Preview online or download for procurement teams.
               </p>
             </div>
             
@@ -490,22 +543,36 @@ export default function DownloadCenter() {
                     </p>
                   </div>
                   
-                  {/* Badges & Actions */}
+                  {/* Badges */}
                   <span className="hidden md:inline tag-pill text-[#1A1B18] border border-[#1A1B18] px-3 py-1.5 uppercase">
                     {d.fileType}
                   </span>
                   <span className="hidden md:inline font-body text-sm text-[#5C5C56] min-w-[64px] text-right">
                     {d.fileSize}
                   </span>
-                  <button
-                    type="button"
-                    data-testid={`download-spec-sp-${d.id}`}
-                    onClick={() => startFileDownload(d)}
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-none py-2 rounded-none h-11 px-4 md:px-5 border border-[#1A1B18] tag-pill text-[#1A1B18] hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors duration-300 cursor-pointer bg-transparent"
-                  >
-                    <FiDownload className="mr-1 w-3.5 h-3.5" />
-                    Download
-                  </button>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      data-testid={`preview-spec-sp-${d.id}`}
+                      onClick={() => handleOpenDocumentPreview(d)}
+                      className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap text-xs font-medium focus-visible:outline-none py-2 rounded-none h-11 px-3 md:px-4 border border-[rgba(26,27,24,0.3)] tag-pill text-[#1A1B18] hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors duration-300 cursor-pointer bg-transparent"
+                    >
+                      <FiEye className="w-3.5 h-3.5" />
+                      Preview
+                    </button>
+
+                    <button
+                      type="button"
+                      data-testid={`download-spec-sp-${d.id}`}
+                      onClick={() => startFileDownload(d)}
+                      className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap text-xs font-medium focus-visible:outline-none py-2 rounded-none h-11 px-4 md:px-5 border border-[#1A1B18] tag-pill text-[#1A1B18] hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors duration-300 cursor-pointer bg-transparent"
+                    >
+                      <FiDownload className="w-3.5 h-3.5" />
+                      Download
+                    </button>
+                  </div>
                 </li>
               );
             })}
@@ -527,7 +594,7 @@ export default function DownloadCenter() {
               <div className="tag-pill text-[#5C5C56] mb-4">03 · The Bookshelf</div>
               <h2 className="font-heading text-4xl md:text-5xl font-light leading-[1.05] text-[#1A1B18]">Catalogues</h2>
               <p className="font-body mt-4 text-base md:text-lg text-[#5C5C56] leading-relaxed">
-                Browse the seasonal index. Each edition is a curated walkthrough of finishes, profiles and applications — designed to be lived with on the desk.
+                Browse the seasonal index. Each edition is a curated walkthrough of finishes, profiles and applications — open in full interactive viewer or download.
               </p>
             </div>
             
@@ -569,7 +636,7 @@ export default function DownloadCenter() {
                     {/* Hover eye preview button */}
                     <button
                       data-testid={`preview-catalogue-cat-${d.id}`}
-                      onClick={() => handleOpenPreview(d)}
+                      onClick={() => handleOpenDocumentPreview(d)}
                       className="absolute bottom-4 right-4 w-12 h-12 bg-[#FDFBF7] text-[#1A1B18] border border-[rgba(26,27,24,0.15)] flex items-center justify-center opacity-0 translate-y-2 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0 hover:bg-[#1A1B18] hover:text-[#FDFBF7] shadow-lg cursor-pointer"
                       aria-label={`Preview ${d.title}`}
                     >
@@ -583,7 +650,7 @@ export default function DownloadCenter() {
                       {d.title}
                     </h3>
                     <div className="mt-3 flex items-center gap-4 font-body text-xs text-[#5C5C56] tracking-wide">
-                      <span>{d.pages || "—"} pages</span>
+                      <span>{d.pages ? `${d.pages} pages` : "Catalog"}</span>
                       <span className="w-1 h-1 rounded-full bg-[#5C5C56]" />
                       <span>{d.fileSize}</span>
                     </div>
@@ -595,15 +662,15 @@ export default function DownloadCenter() {
                       type="button"
                       data-testid={`download-catalogue-cat-${d.id}`}
                       onClick={() => startFileDownload(d)}
-                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium focus-visible:outline-none shadow py-2 rounded-none h-11 px-5 bg-[#1A1B18] text-[#FDFBF7] tag-pill hover:bg-[#C25E4A] hover:text-[#FDFBF7] transition-colors duration-300 cursor-pointer border-0"
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-xs font-medium focus-visible:outline-none shadow py-2 rounded-none h-11 px-5 bg-[#1A1B18] text-[#FDFBF7] tag-pill hover:bg-[#C25E4A] hover:text-[#FDFBF7] transition-colors duration-300 cursor-pointer border-0"
                     >
-                      <FiDownload className="mr-1 w-3.5 h-3.5" />
+                      <FiDownload className="w-3.5 h-3.5" />
                       Download
                     </button>
                     <button
                       data-testid={`preview-catalogue-text-cat-${d.id}`}
-                      onClick={() => handleOpenPreview(d)}
-                      className="ink-link font-heading tag-pill text-[#1A1B18] flex items-center gap-1.5 cursor-pointer bg-transparent border-0"
+                      onClick={() => handleOpenDocumentPreview(d)}
+                      className="ink-link font-heading tag-pill text-[#1A1B18] flex items-center gap-1.5 cursor-pointer bg-transparent border-0 text-xs uppercase tracking-wider"
                     >
                       Preview 
                       <svg
@@ -636,178 +703,302 @@ export default function DownloadCenter() {
         </section>
       </div>
 
-      {/* Lightbox Video Modal */}
-      {activeVideoUrl && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <button
-            onClick={() => setActiveVideoUrl(null)}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 transition w-10 h-10 flex items-center justify-center bg-black/40 rounded-full focus:outline-none z-10"
-            aria-label="Close video"
+      {/* ------------------------------------------------------------- */}
+      {/* FULL SCREEN & PROPER PREVIEW MODALS SECTION                   */}
+      {/* ------------------------------------------------------------- */}
+
+      {/* 1. Photo Lightbox Modal */}
+      {previewPhoto && (
+        <div
+          className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex flex-col justify-between p-4 md:p-6 animate-fadeIn"
+          onClick={() => setPreviewPhoto(null)}
+        >
+          {/* Top Bar */}
+          <div
+            className="w-full max-w-7xl mx-auto flex items-center justify-between py-2 text-white"
+            onClick={(e) => e.stopPropagation()}
           >
-            <FiX className="w-6 h-6" />
-          </button>
-          <div className="w-full max-w-4xl aspect-video bg-black overflow-hidden relative shadow-2xl">
-            <video
-              key={activeVideoUrl}
-              src={activeVideoUrl}
-              controls
-              autoPlay
-              muted
-              playsInline
-              preload="metadata"
-              webkit-playsinline="true"
-              x5-playsinline="true"
-              className="w-full h-full object-contain"
+            <div>
+              <span className="tag-pill bg-white/10 text-xs px-2.5 py-1 text-gray-200 rounded border border-white/20">
+                {previewPhoto.subcategory || "Photo Asset"}
+              </span>
+              <h4 className="font-heading text-xl md:text-2xl text-white mt-1.5 font-medium truncate max-w-xl">
+                {previewPhoto.title}
+              </h4>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => startFileDownload(previewPhoto)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#C25E4A] hover:bg-[#a84e3c] text-white text-xs tag-pill rounded transition-colors shadow"
+              >
+                <FiDownload className="w-4 h-4" />
+                <span>Download Photo</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewPhoto(null)}
+                className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors focus:outline-none"
+                aria-label="Close preview"
+              >
+                <FiX className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Photo Display Area */}
+          <div
+            className="flex-1 w-full max-w-7xl mx-auto flex items-center justify-center my-4 overflow-hidden relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={resolveImage(previewPhoto.coverUrl || previewPhoto.fileUrl, "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=1600&q=80")}
+              alt={previewPhoto.title}
+              className="max-w-full max-h-[80vh] object-contain rounded-md shadow-2xl border border-white/10"
             />
+          </div>
+
+          {/* Footer Info */}
+          <div
+            className="w-full max-w-7xl mx-auto flex items-center justify-between text-xs text-gray-400 font-body py-1 border-t border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span>{previewPhoto.fileType || "JPEG/PNG"} · {previewPhoto.fileSize || "High Resolution"}</span>
+            <span>Click backdrop or press Esc to close</span>
           </div>
         </div>
       )}
 
-      {/* Dynamic Book Preview Modal */}
-      {previewCatalogue && (
-        <div className="fixed inset-0 bg-[#1A1B18]/90 backdrop-blur-md z-50 flex items-center justify-center p-4 md:p-8">
-          <div className="bg-[#FDFBF7] w-full max-w-4xl aspect-[16/10] md:aspect-[1.4] flex flex-col justify-between overflow-hidden shadow-2xl relative border border-white/10 rounded-sm">
-            {/* Modal Header */}
-            <div className="p-4 md:p-6 border-b border-[rgba(26,27,24,0.12)] flex items-center justify-between">
-              <div className="min-w-0">
-                <span className="tag-pill text-[#5C5C56] text-xs">
-                  {previewCatalogue.subcategory || "Edition 2026"} · Previewing Book
-                </span>
-                <h4 className="font-heading text-lg md:text-xl font-medium truncate text-gray-900 mt-1">
-                  {previewCatalogue.title}
-                </h4>
-              </div>
+      {/* 2. Lightbox Video Modal */}
+      {activeVideoUrl && (
+        <div
+          className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 md:p-6"
+          onClick={() => setActiveVideoUrl(null)}
+        >
+          <div
+            className="w-full max-w-6xl bg-black rounded-lg overflow-hidden shadow-2xl flex flex-col relative border border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-4 bg-gray-900 text-white flex items-center justify-between border-b border-gray-800">
+              <span className="font-heading text-lg font-medium truncate">Video Preview</span>
               <button
-                onClick={() => setPreviewCatalogue(null)}
-                className="w-10 h-10 border border-[rgba(26,27,24,0.2)] flex items-center justify-center hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors focus:outline-none"
-                aria-label="Close preview"
+                onClick={() => setActiveVideoUrl(null)}
+                className="text-gray-400 hover:text-white transition w-9 h-9 flex items-center justify-center rounded-full bg-white/10"
+                aria-label="Close video"
               >
                 <FiX className="w-5 h-5" />
               </button>
             </div>
+            <div className="w-full max-h-[82vh] aspect-video bg-black flex items-center justify-center relative">
+              <video
+                key={activeVideoUrl}
+                src={activeVideoUrl}
+                controls
+                autoPlay
+                playsInline
+                preload="metadata"
+                className="w-full h-full max-h-[82vh] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
-            {/* Document Reader Area */}
-            <div className="flex-1 flex items-center justify-center p-6 md:p-8 bg-gray-50/40 relative overflow-hidden select-none">
-              <div className="w-full max-w-lg aspect-[3/4] bg-white shadow-xl relative overflow-hidden border border-gray-200 transition-all duration-500 transform scale-100 flex flex-col justify-between">
-                
-                {/* Page Content Mock rendering */}
-                {previewPage === 1 ? (
-                  // Cover page
-                  <div className="absolute inset-0">
-                    <img
-                      src={resolveImage(previewCatalogue.coverUrl, "https://images.unsplash.com/photo-1526050071463-2c476b162a4c?auto=format&fit=crop&w=800&q=80")}
-                      alt="Cover Page"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/10" />
-                  </div>
-                ) : previewPage === 2 ? (
-                  // Table of contents
-                  <div className="p-8 md:p-10 flex flex-col justify-between h-full bg-[#FDFBF7]">
-                    <div>
-                      <div className="flex items-center gap-2 text-[#C25E4A] mb-4">
-                        <FiBookOpen className="w-5 h-5" />
-                        <span className="tag-pill text-xs">Index</span>
-                      </div>
-                      <h5 className="font-heading text-3xl font-light text-[#1A1B18] mb-6">Table of Contents</h5>
-                      <ul className="space-y-4 font-body text-sm text-[#5C5C56]">
-                        <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
-                          <span>01. Material Innovations &amp; PVC</span>
-                          <span className="font-heading">Page 12</span>
-                        </li>
-                        <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
-                          <span>02. Modular Kitchen Collections</span>
-                          <span className="font-heading">Page 28</span>
-                        </li>
-                        <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
-                          <span>03. Premium WPC Board Selection</span>
-                          <span className="font-heading">Page 45</span>
-                        </li>
-                        <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
-                          <span>04. Installation &amp; Technical Spec Sheet</span>
-                          <span className="font-heading">Page 72</span>
-                        </li>
-                        <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
-                          <span>05. Hardware &amp; Fitting Systems</span>
-                          <span className="font-heading">Page 98</span>
-                        </li>
-                      </ul>
-                    </div>
-                    <div className="tag-pill text-center text-[#9C9C95] text-[10px]">
-                      Linea/Studio Catalogue · 2026 Edition
-                    </div>
-                  </div>
-                ) : previewPage === 3 ? (
-                  // Layout designs
-                  <div className="p-8 md:p-10 flex flex-col justify-between h-full bg-cream">
-                    <div>
-                      <span className="tag-pill text-[#C25E4A] text-xs">Aesthetic Layouts</span>
-                      <h5 className="font-heading text-3xl font-light text-[#1A1B18] mt-2 mb-4 leading-tight">
-                        Modular Luxury
-                      </h5>
-                      <p className="font-body text-xs md:text-sm text-[#5C5C56] leading-relaxed mb-6">
-                        Designed with German hardware integration, waterproof composite board structures, and a curated selection of anti-scratch matte and high-gloss acrylic surfaces.
-                      </p>
-                      <div className="aspect-video bg-gray-200 border border-gray-300 relative overflow-hidden rounded">
-                        <img
-                          src="https://images.unsplash.com/photo-1601993957728-1e56ab70c5a8?auto=format&fit=crop&w=600&q=80"
-                          alt="Layout interior"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </div>
-                    <div className="tag-pill text-center text-[#9C9C95] text-[10px]">
-                      Section 02 · Collection Showcase
-                    </div>
-                  </div>
-                ) : (
-                  // Back Cover
-                  <div className="p-8 md:p-12 flex flex-col justify-between items-center text-center h-full bg-[#1A1B18] text-[#FDFBF7]">
-                    <div className="my-auto space-y-6">
-                      <div className="w-10 h-10 bg-[#C25E4A] rounded-full mx-auto" />
-                      <div>
-                        <h5 className="font-heading text-4xl font-light tracking-wide">
-                          Linea<span className="text-[#C25E4A]">/</span>Studio
-                        </h5>
-                        <p className="font-body text-xs text-[#9C9C95] tracking-widest uppercase mt-2">
-                          Premium Modular Kitchens
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-[10px] tag-pill text-[#5C5C56]">
-                      © 2026 Linea/Studio. All Rights Reserved.
-                    </div>
-                  </div>
-                )}
-
-                {/* Cover Page number badge */}
-                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-0.5 tag-pill rounded">
-                  Page {previewPage} of {previewPagesCount}
+      {/* 3. Spacious & Proper Document / Spec / Catalogue Preview Reader */}
+      {previewDoc && (
+        <div
+          className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4 md:p-6"
+          onClick={() => setPreviewDoc(null)}
+        >
+          <div
+            className="bg-[#FDFBF7] w-full max-w-7xl h-[92vh] flex flex-col justify-between overflow-hidden shadow-2xl relative border border-white/20 rounded-md"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-4 md:px-6 md:py-4 border-b border-[rgba(26,27,24,0.12)] flex items-center justify-between bg-white shrink-0">
+              <div className="min-w-0 flex items-center gap-3">
+                <div className="w-10 h-10 rounded bg-[#F0EFEA] border border-gray-200 flex items-center justify-center shrink-0">
+                  <FiFileText className="w-5 h-5 text-[#C25E4A]" />
                 </div>
+                <div className="min-w-0">
+                  <span className="tag-pill text-[#5C5C56] text-[11px] uppercase tracking-wider">
+                    {previewDoc.subcategory || previewDoc.category || "Document"} · {previewDoc.fileType || "PDF"}
+                  </span>
+                  <h4 className="font-heading text-lg md:text-xl font-medium truncate text-[#1A1B18] mt-0.5">
+                    {previewDoc.title}
+                  </h4>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => startFileDownload(previewDoc)}
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-xs font-medium py-2 h-10 px-4 bg-[#1A1B18] text-[#FDFBF7] tag-pill hover:bg-[#C25E4A] transition-colors duration-300 cursor-pointer border-0 rounded"
+                >
+                  <FiDownload className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Download File</span>
+                </button>
+
+                <button
+                  onClick={() => setPreviewDoc(null)}
+                  className="w-10 h-10 border border-[rgba(26,27,24,0.2)] rounded flex items-center justify-center hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors focus:outline-none text-[#1A1B18]"
+                  aria-label="Close preview"
+                >
+                  <FiX className="w-5 h-5" />
+                </button>
               </div>
             </div>
 
-            {/* Modal Controls / Footer */}
-            <div className="p-4 md:p-6 border-t border-[rgba(26,27,24,0.12)] flex items-center justify-between bg-white">
-              <button
-                disabled={previewPage === 1}
-                onClick={() => setPreviewPage(previewPage - 1)}
-                className="px-4 py-2 border border-[rgba(26,27,24,0.15)] text-[#1A1B18] tag-pill disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors focus:outline-none"
-              >
-                Previous
-              </button>
-              
-              <span className="font-body text-sm text-[#5C5C56]">
-                Page {previewPage} of {previewPagesCount}
-              </span>
+            {/* Document Reader Main Display */}
+            <div className="flex-1 bg-[#EAE8E1] relative overflow-hidden flex items-center justify-center p-2 sm:p-4 md:p-6">
+              {docViewMode === "pdf" && previewDoc.fileUrl ? (
+                /* Full Native PDF Viewer */
+                <div className="w-full h-full flex flex-col items-center justify-center bg-white shadow-xl rounded overflow-hidden border border-gray-300">
+                  <iframe
+                    src={previewDoc.id ? `${API}/downloads/view/${previewDoc.id}#toolbar=1&navpanes=0` : `${resolveFileUrl(previewDoc.fileUrl)}#toolbar=1&navpanes=0`}
+                    title={previewDoc.title}
+                    className="w-full h-full border-0"
+                  />
+                </div>
+              ) : (
+                /* Spacious Interactive Document / Flipbook Presentation Reader */
+                <div className="h-full w-full flex items-center justify-center relative">
+                  <div className="h-full max-h-[78vh] aspect-[3/4] max-w-4xl bg-white shadow-2xl relative overflow-hidden border border-gray-300 rounded-sm transition-all duration-300 flex flex-col justify-between">
+                    
+                    {previewPage === 1 ? (
+                      // Cover Page
+                      <div className="absolute inset-0">
+                        <img
+                          src={resolveImage(previewDoc.coverUrl, "https://images.unsplash.com/photo-1526050071463-2c476b162a4c?auto=format&fit=crop&w=1200&q=80")}
+                          alt="Cover Page"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/10" />
+                      </div>
+                    ) : previewPage === 2 ? (
+                      // Table of Contents
+                      <div className="p-8 md:p-12 flex flex-col justify-between h-full bg-[#FDFBF7] overflow-y-auto">
+                        <div>
+                          <div className="flex items-center gap-2 text-[#C25E4A] mb-4">
+                            <FiBookOpen className="w-5 h-5" />
+                            <span className="tag-pill text-xs">Index</span>
+                          </div>
+                          <h5 className="font-heading text-3xl font-light text-[#1A1B18] mb-6">Table of Contents</h5>
+                          <ul className="space-y-4 font-body text-sm text-[#5C5C56]">
+                            <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
+                              <span>01. Material Innovations &amp; PVC</span>
+                              <span className="font-heading">Page 12</span>
+                            </li>
+                            <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
+                              <span>02. Modular Kitchen Collections</span>
+                              <span className="font-heading">Page 28</span>
+                            </li>
+                            <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
+                              <span>03. Premium WPC Board Selection</span>
+                              <span className="font-heading">Page 45</span>
+                            </li>
+                            <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
+                              <span>04. Installation &amp; Technical Spec Sheet</span>
+                              <span className="font-heading">Page 72</span>
+                            </li>
+                            <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
+                              <span>05. Hardware &amp; Fitting Systems</span>
+                              <span className="font-heading">Page 98</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div className="tag-pill text-center text-[#9C9C95] text-[10px] mt-6">
+                          {previewDoc.title} · Document Showcase
+                        </div>
+                      </div>
+                    ) : previewPage === 3 ? (
+                      // Showcase Layout
+                      <div className="p-8 md:p-12 flex flex-col justify-between h-full bg-cream overflow-y-auto">
+                        <div>
+                          <span className="tag-pill text-[#C25E4A] text-xs">Aesthetic Layouts</span>
+                          <h5 className="font-heading text-3xl font-light text-[#1A1B18] mt-2 mb-4 leading-tight">
+                            Modular Luxury
+                          </h5>
+                          <p className="font-body text-xs md:text-sm text-[#5C5C56] leading-relaxed mb-6">
+                            Designed with German hardware integration, waterproof composite board structures, and a curated selection of anti-scratch matte and high-gloss acrylic surfaces.
+                          </p>
+                          <div className="aspect-video bg-gray-200 border border-gray-300 relative overflow-hidden rounded shadow-sm">
+                            <img
+                              src="https://images.unsplash.com/photo-1601993957728-1e56ab70c5a8?auto=format&fit=crop&w=1000&q=80"
+                              alt="Layout interior"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </div>
+                        <div className="tag-pill text-center text-[#9C9C95] text-[10px] mt-6">
+                          Section 02 · Collection Showcase
+                        </div>
+                      </div>
+                    ) : (
+                      // Back Cover
+                      <div className="p-8 md:p-12 flex flex-col justify-between items-center text-center h-full bg-[#1A1B18] text-[#FDFBF7]">
+                        <div className="my-auto space-y-6">
+                          <div className="w-12 h-12 bg-[#C25E4A] rounded-full mx-auto shadow-md" />
+                          <div>
+                            <h5 className="font-heading text-4xl font-light tracking-wide">
+                              Linea<span className="text-[#C25E4A]">/</span>Studio
+                            </h5>
+                            <p className="font-body text-xs text-[#9C9C95] tracking-widest uppercase mt-2">
+                              Premium Modular Kitchens
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-[10px] tag-pill text-[#5C5C56]">
+                          © 2026 Linea/Studio. All Rights Reserved.
+                        </div>
+                      </div>
+                    )}
 
-              <button
-                disabled={previewPage === previewPagesCount}
-                onClick={() => setPreviewPage(previewPage + 1)}
-                className="px-4 py-2 border border-[rgba(26,27,24,0.15)] text-[#1A1B18] tag-pill disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors focus:outline-none"
-              >
-                Next
-              </button>
+                    {/* Page Number Overlay badge */}
+                    <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[11px] px-2.5 py-1 tag-pill rounded backdrop-blur-sm">
+                      Page {previewPage} of {previewPagesCount}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Controls / Footer */}
+            <div className="p-3 md:px-6 md:py-4 border-t border-[rgba(26,27,24,0.12)] flex items-center justify-between bg-white shrink-0">
+              <div className="flex items-center gap-2">
+                {previewDoc.fileUrl && (
+                  <button
+                    onClick={() => setDocViewMode(docViewMode === "pdf" ? "book" : "pdf")}
+                    className="px-3 py-1.5 border border-gray-300 text-[#1A1B18] text-xs tag-pill rounded hover:bg-gray-100 transition-colors flex items-center gap-1.5 font-medium"
+                  >
+                    <FiEye className="w-3.5 h-3.5 text-[#C25E4A]" />
+                    {docViewMode === "pdf" ? "Switch to Flipbook View" : "Switch to PDF Reader"}
+                  </button>
+                )}
+              </div>
+
+              {docViewMode !== "pdf" && (
+                <div className="flex items-center gap-3">
+                  <button
+                    disabled={previewPage === 1}
+                    onClick={() => setPreviewPage(previewPage - 1)}
+                    className="px-4 py-1.5 border border-[rgba(26,27,24,0.15)] text-[#1A1B18] tag-pill text-xs rounded disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors focus:outline-none"
+                  >
+                    Previous
+                  </button>
+                  <span className="font-body text-xs text-[#5C5C56]">
+                    Page {previewPage} of {previewPagesCount}
+                  </span>
+                  <button
+                    disabled={previewPage === previewPagesCount}
+                    onClick={() => setPreviewPage(previewPage + 1)}
+                    className="px-4 py-1.5 border border-[rgba(26,27,24,0.15)] text-[#1A1B18] tag-pill text-xs rounded disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors focus:outline-none"
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
