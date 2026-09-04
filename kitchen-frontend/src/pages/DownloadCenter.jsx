@@ -28,7 +28,6 @@ export default function DownloadCenter() {
   const [activeVideoUrl, setActiveVideoUrl] = useState(null);
   const [previewPhoto, setPreviewPhoto] = useState(null);
   const [previewDoc, setPreviewDoc] = useState(null);
-  const [previewPage, setPreviewPage] = useState(1);
 
   useEffect(() => {
     axios.get("/downloads")
@@ -196,13 +195,10 @@ export default function DownloadCenter() {
     });
   }, [catalogues, searchCatalogues]);
 
-  // Document preview handler (defaults to flipbook view)
+  // Document preview handler
   const handleOpenDocumentPreview = (docItem) => {
     setPreviewDoc(docItem);
-    setPreviewPage(1);
   };
-
-  const previewPagesCount = 4;
 
   if (loading) {
     return (
@@ -817,7 +813,7 @@ export default function DownloadCenter() {
                 </div>
                 <div className="min-w-0">
                   <span className="tag-pill text-[#5C5C56] text-[11px] uppercase tracking-wider">
-                    {previewDoc.subcategory || previewDoc.category || "Document"} · Flipbook View
+                    {previewDoc.subcategory || previewDoc.category || "Document"} · Preview
                   </span>
                   <h4 className="font-heading text-lg md:text-xl font-medium truncate text-[#1A1B18] mt-0.5">
                     {previewDoc.title}
@@ -845,134 +841,105 @@ export default function DownloadCenter() {
               </div>
             </div>
 
-            {/* Document Reader Main Display - Flipbook Presentation */}
-            <div className="flex-1 bg-[#EAE8E1] relative overflow-hidden flex items-center justify-center p-2 sm:p-4 md:p-6">
-              <div className="h-full w-full flex items-center justify-center relative">
-                <div className="h-full max-h-[78vh] aspect-[3/4] max-w-4xl bg-white shadow-2xl relative overflow-hidden border border-gray-300 rounded-sm transition-all duration-300 flex flex-col justify-between">
-                  
-                  {previewPage === 1 ? (
-                    // Cover Page
-                    <div className="absolute inset-0">
-                      <img
-                        src={resolveImage(previewDoc.coverUrl, "https://images.unsplash.com/photo-1526050071463-2c476b162a4c?auto=format&fit=crop&w=1200&q=80")}
-                        alt="Cover Page"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/10" />
-                    </div>
-                  ) : previewPage === 2 ? (
-                    // Table of Contents
-                    <div className="p-8 md:p-12 flex flex-col justify-between h-full bg-[#FDFBF7] overflow-y-auto">
-                      <div>
-                        <div className="flex items-center gap-2 text-[#C25E4A] mb-4">
-                          <FiBookOpen className="w-5 h-5" />
-                          <span className="tag-pill text-xs">Index</span>
-                        </div>
-                        <h5 className="font-heading text-3xl font-light text-[#1A1B18] mb-6">Table of Contents</h5>
-                        <ul className="space-y-4 font-body text-sm text-[#5C5C56]">
-                          <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
-                            <span>01. Material Innovations &amp; PVC</span>
-                            <span className="font-heading">Page 12</span>
-                          </li>
-                          <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
-                            <span>02. Modular Kitchen Collections</span>
-                            <span className="font-heading">Page 28</span>
-                          </li>
-                          <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
-                            <span>03. Premium WPC Board Selection</span>
-                            <span className="font-heading">Page 45</span>
-                          </li>
-                          <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
-                            <span>04. Installation &amp; Technical Spec Sheet</span>
-                            <span className="font-heading">Page 72</span>
-                          </li>
-                          <li className="flex justify-between border-b border-dashed border-gray-300 pb-1">
-                            <span>05. Hardware &amp; Fitting Systems</span>
-                            <span className="font-heading">Page 98</span>
-                          </li>
-                        </ul>
-                      </div>
-                      <div className="tag-pill text-center text-[#9C9C95] text-[10px] mt-6">
-                        {previewDoc.title} · Document Showcase
-                      </div>
-                    </div>
-                  ) : previewPage === 3 ? (
-                    // Showcase Layout
-                    <div className="p-8 md:p-12 flex flex-col justify-between h-full bg-cream overflow-y-auto">
-                      <div>
-                        <span className="tag-pill text-[#C25E4A] text-xs">Aesthetic Layouts</span>
-                        <h5 className="font-heading text-3xl font-light text-[#1A1B18] mt-2 mb-4 leading-tight">
-                          Modular Luxury
-                        </h5>
-                        <p className="font-body text-xs md:text-sm text-[#5C5C56] leading-relaxed mb-6">
-                          Designed with German hardware integration, waterproof composite board structures, and a curated selection of anti-scratch matte and high-gloss acrylic surfaces.
-                        </p>
-                        <div className="aspect-video bg-gray-200 border border-gray-300 relative overflow-hidden rounded shadow-sm">
-                          <img
-                            src="https://images.unsplash.com/photo-1601993957728-1e56ab70c5a8?auto=format&fit=crop&w=1000&q=80"
-                            alt="Layout interior"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      </div>
-                      <div className="tag-pill text-center text-[#9C9C95] text-[10px] mt-6">
-                        Section 02 · Collection Showcase
-                      </div>
-                    </div>
-                  ) : (
-                    // Back Cover
-                    <div className="p-8 md:p-12 flex flex-col justify-between items-center text-center h-full bg-[#1A1B18] text-[#FDFBF7]">
-                      <div className="my-auto space-y-6">
-                        <div className="w-12 h-12 bg-[#C25E4A] rounded-full mx-auto shadow-md" />
-                        <div>
-                          <h5 className="font-heading text-4xl font-light tracking-wide">
-                            Linea<span className="text-[#C25E4A]">/</span>Studio
-                          </h5>
-                          <p className="font-body text-xs text-[#9C9C95] tracking-widest uppercase mt-2">
-                            Premium Modular Kitchens
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-[10px] tag-pill text-[#5C5C56]">
-                        © 2026 Linea/Studio. All Rights Reserved.
-                      </div>
-                    </div>
-                  )}
+            {/* Document Reader Main Display */}
+            <div className="flex-1 bg-[#1A1B18] relative overflow-hidden flex items-center justify-center p-0">
+              {(() => {
+                const fileTypeLower = (previewDoc.fileType || "").toLowerCase();
+                const fileUrlLower = (previewDoc.fileUrl || "").toLowerCase();
+                const isPdf = fileTypeLower === "pdf" || fileUrlLower.endsWith(".pdf") || fileUrlLower.includes("/pdf");
+                const isImage = ["jpg", "jpeg", "png", "webp", "avif", "gif"].includes(fileTypeLower) || /\.(jpg|jpeg|png|webp|avif|gif)$/i.test(fileUrlLower);
+                const isVideo = ["mp4", "webm", "mov", "video"].includes(fileTypeLower) || /\.(mp4|webm|mov)$/i.test(fileUrlLower);
 
-                  {/* Page Number Overlay badge */}
-                  <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[11px] px-2.5 py-1 tag-pill rounded backdrop-blur-sm">
-                    Page {previewPage} of {previewPagesCount}
-                  </div>
-                </div>
-              </div>
+                const docViewUrl = previewDoc.id
+                  ? `${API}/downloads/view/${previewDoc.id}`
+                  : resolveFileUrl(previewDoc.fileUrl);
+
+                if (isPdf) {
+                  return (
+                    <iframe
+                      src={`${docViewUrl}#toolbar=1`}
+                      title={previewDoc.title}
+                      className="w-full h-full border-0 bg-white"
+                    />
+                  );
+                }
+
+                if (isImage) {
+                  return (
+                    <div className="w-full h-full flex items-center justify-center p-4">
+                      <img
+                        src={resolveImage(previewDoc.fileUrl || previewDoc.coverUrl, "")}
+                        alt={previewDoc.title}
+                        className="max-w-full max-h-full object-contain rounded shadow-lg"
+                      />
+                    </div>
+                  );
+                }
+
+                if (isVideo) {
+                  return (
+                    <div className="w-full h-full flex items-center justify-center p-4">
+                      <video
+                        src={resolvePlayableVideoUrl(previewDoc.fileUrl)}
+                        controls
+                        autoPlay
+                        className="max-w-full max-h-full rounded shadow-lg"
+                      />
+                    </div>
+                  );
+                }
+
+                return (
+                  <iframe
+                    src={docViewUrl}
+                    title={previewDoc.title}
+                    className="w-full h-full border-0 bg-white"
+                  />
+                );
+              })()}
             </div>
 
             {/* Modal Controls / Footer */}
             <div className="p-3 md:px-6 md:py-4 border-t border-[rgba(26,27,24,0.12)] flex items-center justify-between bg-white shrink-0">
               <div className="flex items-center gap-2 font-body text-xs text-[#5C5C56]">
-                <span className="tag-pill bg-gray-100 text-gray-700 px-2.5 py-1 rounded">
+                <span className="tag-pill bg-gray-100 text-gray-700 px-2.5 py-1 rounded font-medium">
                   {previewDoc.fileType || "PDF"} Document
                 </span>
+                {previewDoc.pages && (
+                  <span className="tag-pill bg-gray-100 text-gray-700 px-2.5 py-1 rounded font-medium">
+                    {previewDoc.pages} Pages
+                  </span>
+                )}
+                {previewDoc.fileSize && (
+                  <span className="tag-pill bg-gray-100 text-gray-700 px-2.5 py-1 rounded font-medium">
+                    {previewDoc.fileSize}
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center gap-3">
-                <button
-                  disabled={previewPage === 1}
-                  onClick={() => setPreviewPage(previewPage - 1)}
-                  className="px-4 py-1.5 border border-[rgba(26,27,24,0.15)] text-[#1A1B18] tag-pill text-xs rounded disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors focus:outline-none"
+                <a
+                  href={previewDoc.id ? `${API}/downloads/view/${previewDoc.id}` : resolveFileUrl(previewDoc.fileUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 border border-[rgba(26,27,24,0.2)] text-[#1A1B18] tag-pill text-xs rounded hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors focus:outline-none flex items-center gap-1.5"
                 >
-                  Previous
-                </button>
-                <span className="font-body text-xs text-[#5C5C56] font-medium min-w-[80px] text-center">
-                  Page {previewPage} of {previewPagesCount}
-                </span>
-                <button
-                  disabled={previewPage === previewPagesCount}
-                  onClick={() => setPreviewPage(previewPage + 1)}
-                  className="px-4 py-1.5 border border-[rgba(26,27,24,0.15)] text-[#1A1B18] tag-pill text-xs rounded disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors focus:outline-none"
-                >
-                  Next
-                </button>
+                  <span>Open in New Tab</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M7 7h10v10" />
+                    <path d="M7 17 17 7" />
+                  </svg>
+                </a>
               </div>
             </div>
           </div>
