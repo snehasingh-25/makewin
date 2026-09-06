@@ -130,18 +130,18 @@ app.get("/health", async (req, res) => {
   }
 });
 
-app.use("/products", productRoutes);
-app.use("/categories", categoryRoutes);
-app.use("/auth", authRoutes);
-app.use("/contact", contactRoutes);
-app.use("/reels", reelRoutes);
-app.use("/banners", bannerRoutes);
-app.use("/dealers", dealerRoutes);
-app.use("/recommendations", recommendationRoutes);
-app.use("/downloads", downloadRoutes);
-app.use("/generate-description", generateDescriptionRoutes);
-// app.use("/chat", chatRoutes); // CHATBOT DISABLED
-app.use("/instagram", instagramRoutes);
+app.use(["/products", "/api/products"], productRoutes);
+app.use(["/categories", "/api/categories"], categoryRoutes);
+app.use(["/auth", "/api/auth"], authRoutes);
+app.use(["/contact", "/api/contact"], contactRoutes);
+app.use(["/reels", "/api/reels"], reelRoutes);
+app.use(["/banners", "/api/banners"], bannerRoutes);
+app.use(["/dealers", "/api/dealers"], dealerRoutes);
+app.use(["/recommendations", "/api/recommendations"], recommendationRoutes);
+app.use(["/downloads", "/api/downloads"], downloadRoutes);
+app.use(["/generate-description", "/api/generate-description"], generateDescriptionRoutes);
+// app.use(["/chat", "/api/chat"], chatRoutes); // CHATBOT DISABLED
+app.use(["/instagram", "/api/instagram"], instagramRoutes);
 
 // Global error handling middleware (must be after all routes)
 app.use((err, req, res, next) => {

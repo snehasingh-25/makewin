@@ -101,13 +101,26 @@ export default function DownloadCenter() {
   const resolveImage = (path, fallback) => {
     if (!path) return fallback;
     if (path.startsWith("http")) return path;
-    return `${API}${path}`;
+    const cleanApi = API.replace(/\/+$/, "");
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return `${cleanApi}${cleanPath}`;
   };
 
   const resolveFileUrl = (path) => {
     if (!path) return "";
     if (path.startsWith("http")) return path;
-    return `${API}${path}`;
+    const cleanApi = API.replace(/\/+$/, "");
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return `${cleanApi}${cleanPath}`;
+  };
+
+  const getDocViewUrl = (doc) => {
+    if (!doc) return "";
+    const cleanApi = API.replace(/\/+$/, "");
+    if (doc.id) {
+      return `${cleanApi}/downloads/view/${doc.id}`;
+    }
+    return resolveFileUrl(doc.fileUrl);
   };
 
   const resolvePlayableVideoUrl = (path) => toPlayableVideoUrl(resolveFileUrl(path));
@@ -850,9 +863,7 @@ export default function DownloadCenter() {
                 const isImage = ["jpg", "jpeg", "png", "webp", "avif", "gif"].includes(fileTypeLower) || /\.(jpg|jpeg|png|webp|avif|gif)$/i.test(fileUrlLower);
                 const isVideo = ["mp4", "webm", "mov", "video"].includes(fileTypeLower) || /\.(mp4|webm|mov)$/i.test(fileUrlLower);
 
-                const docViewUrl = previewDoc.id
-                  ? `${API}/downloads/view/${previewDoc.id}`
-                  : resolveFileUrl(previewDoc.fileUrl);
+                const docViewUrl = getDocViewUrl(previewDoc);
 
                 if (isPdf) {
                   return (
@@ -919,7 +930,7 @@ export default function DownloadCenter() {
 
               <div className="flex items-center gap-3">
                 <a
-                  href={previewDoc.id ? `${API}/downloads/view/${previewDoc.id}` : resolveFileUrl(previewDoc.fileUrl)}
+                  href={getDocViewUrl(previewDoc)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-4 py-2 border border-[rgba(26,27,24,0.2)] text-[#1A1B18] tag-pill text-xs rounded hover:bg-[#1A1B18] hover:text-[#FDFBF7] transition-colors focus:outline-none flex items-center gap-1.5"

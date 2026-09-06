@@ -438,8 +438,8 @@ export function resolveDownloadFetchUrl(fileUrl, { attachment = true } = {}) {
     }
   }
 
-  // Public image URLs: force attachment when possible
-  if (fileUrl.includes("res.cloudinary.com") && fileUrl.includes("/upload/") && !fileUrl.includes("fl_attachment")) {
+  // Public Cloudinary URLs: force attachment only when attachment flag is requested
+  if (attachment && fileUrl.includes("res.cloudinary.com") && fileUrl.includes("/upload/") && !fileUrl.includes("fl_attachment")) {
     return { kind: "remote", url: fileUrl.replace("/upload/", "/upload/fl_attachment/") };
   }
 
